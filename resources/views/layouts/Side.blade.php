@@ -24,8 +24,8 @@
         </a>
         <div id="transaction" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
           <div class="bg-white py-2 collapse-inner rounded">
-            <a class="collapse-item" href="{{ url('/purchaseorder') }}">Purchase Order</a>
-            <a class="collapse-item" href="#">Stock Receive (RR)</a>
+            <a class="collapse-item" href="{{ url('/purchaseorder') }}">Purchase Order (PO)</a>
+            <a class="collapse-item" href="{{ url('/stockreceive') }}">Stock Receive (RR)</a>
           </div>
         </div>
       </li>

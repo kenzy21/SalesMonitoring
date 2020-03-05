@@ -5,11 +5,9 @@
 @section('content')
         <div class="col-xl-12">
           <div class="card shadow mb-4">
-            <!-- Card Header - Dropdown -->
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                 <h6 class="m-0 font-weight-bold text-primary">Supplier</h6>
             </div>
-                <!-- Card Body -->
                 <div class="card-body">                 
                     <button id="supplier-create" class="btn btn-primary" style="margin-bottom:10px;">Create</button>
                     <input type="text" class="form-control" id="supplier-search" style="margin-bottom:10px; text-transform:uppercase;" placeholder="Search Supplier">
@@ -44,14 +42,14 @@
     $(document).ready(function(){
 
         $.ajaxSetup({
-                    headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                    }
-                });
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
 
         $("#supplier-create").on("click",function(){
-                $("#supplier-create-modal").modal("show");
-            });
+            $("#supplier-create-modal").modal("show");
+        });
 
         $("#supplier").on("click","tr a",function(){
             var CurrentRow = $(this).closest("tr");
@@ -68,21 +66,19 @@
             $("#supplier-name-short-edit").val(supplier_short_name.trim());
             $("#supplier-address-edit").val(supplier_address.trim());
             $("#supplier-terms-edit").val(supplier_terms);
-
             $("#supplier-edit-modal").modal("show");
-
         });
 
         $("#supplier").on("click","tbody tr",function(){
-                $(this).addClass('RowHighlight').siblings().removeClass('RowHighlight');
-            });
+            $(this).addClass('RowHighlight').siblings().removeClass('RowHighlight');
+        });
             
         $("#supplier-search").on("keyup",function(){
             $.getScript('/js/Search.js', function() {
-                    Search("supplier-search","supplier","tr","td",1);
-                });
+                Search("supplier-search","supplier","tr","td",1);
+            });
         });
-
+        
     });
 </script>
 @endsection

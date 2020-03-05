@@ -37,11 +37,9 @@
 
 <script>
     $("#supplier-create-modal").on("show.bs.modal",function(){
-
         setTimeout(function(){ 
             $("#supplier-name").focus();
-            }, 500);
-
+        }, 500);
     });
 
     $("#supplier-create-modal").on("hide.bs.modal",function(){
@@ -66,8 +64,7 @@
             cancelButtonColor: '#d33',
             confirmButtonText: 'Yes'
         }).then((result) => {
-            if(result.value){
-                
+            if(result.value){            
                 $.ajax({
                     type: "POST",
                     url: "/supplier/create",
@@ -102,12 +99,12 @@
                         }
                     }
                 });
-            }
-        });
+             }
+         });
      });
 
      $("#supplier-terms").on("keypress",function(event){
-        return isNumberKey(event);
+         return isNumberKey(event);
      });
 
      function isNumberKey(evt){
@@ -115,7 +112,6 @@
         if (charCode != 46 && charCode > 31 
             && (charCode < 48 || charCode > 57))
             return false;
-
         return true;
     }
 </script>

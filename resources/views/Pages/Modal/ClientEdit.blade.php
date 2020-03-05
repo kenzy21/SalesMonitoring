@@ -31,64 +31,62 @@
 </div>
 <script>
     $("#client-edit-modal").on("show.bs.modal",function(){
-            setTimeout(function(){
-                $("#client-name-edit").focus();
-            }, 500);
-        });
+        setTimeout(function(){
+            $("#client-name-edit").focus();
+        }, 500);
+    });
 
     $("#client-edit-data").on("click",function(){
+        var client_code,client_name,client_address,infomessage;
 
-            var client_code,client_name,client_address,infomessage;
+        client_code = $("#client-code").val();
+        client_name = $("#client-name-edit").val();
+        client_address = $("#client-address-edit").val();
 
-            client_code = $("#client-code").val();
-            client_name = $("#client-name-edit").val();
-            client_address = $("#client-address-edit").val();
-
-            Swal.fire({
-                title: "Are you sure you want to update it?",
-                text: "",
-                icon: "question",
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes'
-            }).then((result) => {
-                if(result.value){
-                    $.ajax({
-                        type: "POST",
-                        url: "/client/edit",
-                        data:{
-                            client_code:client_code,
-                            client_name:client_name,
-                            client_address:client_address
-                        },
-                        success:function(result){
-                            infomessage = result.message;
-                            
-                            if(infomessage=="success"){
-                                Swal.fire(
-                                    'Successfully saved!',
-                                    'saved!',
-                                    'success'
-                                ).then(function(){
-                                    $("#client-edit-modal").modal("hide");
-                                })
-                            }
-                            else{
-                                Swal.fire(
-                                    'Please check the error below.',
-                                    infomessage,
-                                    'error'
-                                )
-                            }
+        Swal.fire({
+            title: "Are you sure you want to update it?",
+            text: "",
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes'
+        }).then((result) => {
+            if(result.value){
+                $.ajax({
+                    type: "POST",
+                    url: "/client/edit",
+                    data:{
+                        client_code:client_code,
+                        client_name:client_name,
+                        client_address:client_address
+                    },
+                    success:function(result){
+                        infomessage = result.message;                      
+                        if(infomessage=="success"){
+                            Swal.fire(
+                                'Successfully saved!',
+                                'saved!',
+                                'success'
+                            ).then(function(){
+                                $("#client-edit-modal").modal("hide");
+                            })
                         }
-                    });
-                }
-            })
+                        else{
+                            Swal.fire(
+                                'Please check the error below.',
+                                infomessage,
+                                'error'
+                            )
+                        }
+                    }
+                });
+             }
+        });
+    });   
 
-            $("#client-edit-modal").on("hide.bs.modal",function(){
-                $("#client-edit").trigger("reset");
-                location.href = "/client";
-            });
-        });   
+    $("#client-edit-modal").on("hide.bs.modal",function(){
+        $("#client-edit").trigger("reset");
+        location.href = "/client";
+    });
 </script>

@@ -6,6 +6,7 @@ use App\Classification;
 use App\Generic;
 use App\Stocktag;
 use carbon\carbon;
+use App\PurchaseorderHeader;
 
 trait MasterfileTraits {
     
@@ -40,6 +41,11 @@ trait MasterfileTraits {
 
     public function ConvertDateforPrefix($date){
         $dateconverted = Carbon::createFromFormat('Y-m-d H:i:s', $date)->format('Ymd');
+        return $dateconverted;
+    }
+
+    public function ConvertDate($date){
+        $dateconverted = Carbon::createFromFormat('m/d/Y', $date)->format('Y-m-d');
         return $dateconverted;
     }
 }

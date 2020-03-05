@@ -57,7 +57,7 @@
                         </table>
                     </div>
                     <div class="form-row">
-                        <div class="col-md-10"></div>
+                        <div class="form-group col-md-10 text-right" style="padding-top:10px;"><span>Total :</span></div>
                         <div class="col-md-2"><input type="text" id="total-amount" class="form-control" style="text-align:right;font-size:1.3em;" value="0.00" readonly></div>
                     </div>
                     <div class="form-row">
@@ -72,29 +72,30 @@
              </div>
         </div>
     </div>
-@include('Pages.Modal.PurchaseOrderAddItem')
-@include('Pages.Modal.PurchaseOrderEditItem')
+    @include('Pages.Modal.PurchaseOrderAddItem')
+    @include('Pages.Modal.PurchaseOrderEditItem')
     <script>
-
-        $(document).ready(function(){
-            
+        $(document).ready(function(){       
             var suppliercode,suppliername,supplieraddress,supplierterms;
 
             document.onkeyup = KeyCheck;
 
+            $("#total-amount").val("0.00");
+
             function KeyCheck(e){
                 var KeyID = (window.event) ? event.keyCode : e.keyCode;
+
                 if(KeyID == 112){
                     $("#purchaseorder-additem").modal("show");
                 }
                 else if(KeyID == 113){
                     $("#save-transaction").trigger("click");
                 }
-            }
+            };
 
             $.ajaxSetup({
                 headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 }
             });
 
@@ -110,39 +111,36 @@
                 $(this).addClass('RowHighlight').siblings().removeClass('RowHighlight');
             });
 
-            $("#total-amount").val("0.00");
+            $.ajax({
+                type: "GET",
+                url: "/purchaseorder/supplier",
+                success:function(result){
+                    var option = {
+                        data:result.supplier,
+                        getValue: "supplier_name",
+                        placeholder: "Supplier",
+                        adjustWidth: false,
+                        list:{
+                            match:{
+                                enabled: true
+                            },
+                            onChooseEvent:function(){
+                                suppliercode = $("#supplier").getSelectedItemData().suppcode;
+                                suppliername = $("#supplier").getSelectedItemData().supplier_name;
+                                supplieraddress = $("#supplier").getSelectedItemData().supplier_address;
+                                supplierterms = $("#supplier").getSelectedItemData().terms;
 
-              $.ajax({
-                    type: "GET",
-                    url: "/purchaseorder/supplier",
-                    success:function(result){
-                            var option = {
-                                data:result.supplier,
-                                getValue: "supplier_name",
-                                placeholder: "Supplier",
-                                adjustWidth: false,
-                                list:{
-                                    match:{
-                                        enabled: true
-                                    },
-                                    onChooseEvent:function(){
-                                            suppliercode = $("#supplier").getSelectedItemData().suppcode;
-                                            suppliername = $("#supplier").getSelectedItemData().supplier_name;
-                                            supplieraddress = $("#supplier").getSelectedItemData().supplier_address;
-                                            supplierterms = $("#supplier").getSelectedItemData().terms;
-
-                                            $("#address").val(supplieraddress);
-                                            $("#terms").val(supplierterms);
-                                    }
-                                }
+                                $("#address").val(supplieraddress);
+                                $("#terms").val(supplierterms);
                             }
-                        $("#supplier").easyAutocomplete(option);
+                        }
                     }
+                    $("#supplier").easyAutocomplete(option);
+                }
             });
 
             $("#additem").on("click",function(){
-                $("#purchaseorder-additem").modal("show");
-                
+                $("#purchaseorder-additem").modal("show");          
             });
 
             function isNumberKey(evt){
@@ -150,9 +148,8 @@
                 if (charCode != 46 && charCode > 31 
                     && (charCode < 48 || charCode > 57))
                     return false;
-
                 return true;
-            }
+            };
 
             $("#quantity-additem").on("keypress",function(event){
                 return isNumberKey(event);
@@ -179,7 +176,6 @@
                 $("#unit-edititem").val(CurrentRow.find("td:eq(3)").text());
                 $("#cost-edititem").val(CurrentRow.find("td:eq(5)").text().trim());
                 $("#quantity-edititem").val(CurrentRow.find("td:eq(4)").text().trim());
-
                 $("#purchaseorder-edititem").modal("show");
             });
 
@@ -195,7 +191,7 @@
                         ).then(function(){
                             $("#supplier").focus();
                             e.preventDefault();
-                        })
+                        });
                 }
                 else if(terms == "" || parseFloat(terms) == 0){
                         Swal.fire(
@@ -205,7 +201,7 @@
                         ).then(function(){
                             $("#terms").focus();
                             e.preventDefault();
-                        })
+                        });
                 }
                 else if(tablerows == 0){
                         Swal.fire(
@@ -241,44 +237,44 @@
                                 cancelButtonColor: '#d33',
                                 confirmButtonText: 'Yes'
                         }).then((result) => {
-                                if(result.value){
-                                        $.ajax({
-                                            type: "POST",
-                                            url: "/purchaseorder/save/transaction",
-                                            data: {
-                                                supplier_code:supplier_code,
-                                                po_date:po_date,
-                                                supplier_terms:supplier_terms,
-                                                po_remarks:po_remarks,
-                                                purchaseorder_details:JSON.stringify(purchaseorder_details)
-                                            },
-                                            success:function(result){                         
-                                                    if(result.message == "success"){
-                                                        Swal.fire(
-                                                            'Data successfully saved.',
-                                                            '',
-                                                            'success'
-                                                        ).then(function(){
-                                                                $("#purchaseorder-create").trigger("reset");
-                                                                $("#list-items tbody").empty();
-                                                                $("#supplier").focus();
-                                                                $("#total-amount").val("0.00");
-                                                        })
-                                                    }
-                                                    else{
-                                                        Swal.fire(
-                                                            'Something went wrong.',
-                                                            '',
-                                                            'error'
-                                                        )
-                                                    }
-                                                }
-                                            });
+                            if(result.value){
+                                $.ajax({
+                                    type: "POST",
+                                    url: "/purchaseorder/save/transaction",
+                                    data: {
+                                        supplier_code:supplier_code,
+                                        po_date:po_date,
+                                        supplier_terms:supplier_terms,
+                                        po_remarks:po_remarks,
+                                        purchaseorder_details:JSON.stringify(purchaseorder_details)
+                                    },
+                                    success:function(result){                         
+                                            if(result.message == "success"){
+                                                Swal.fire(
+                                                    'Data successfully saved.',
+                                                    '',
+                                                    'success'
+                                                ).then(function(){
+                                                        $("#purchaseorder-create").trigger("reset");
+                                                        $("#list-items tbody").empty();
+                                                        $("#supplier").focus();
+                                                        $("#total-amount").val("0.00");
+                                                })
+                                            }
+                                            else{
+                                                Swal.fire(
+                                                    'Something went wrong.',
+                                                    '',
+                                                    'error'
+                                                )
+                                            }
+                                        }
+                                    });
                                 }
-                        })
+                            })
 
-                }
-            });
+                        }
+                });
 
         });
 

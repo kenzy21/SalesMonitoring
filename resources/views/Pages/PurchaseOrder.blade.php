@@ -5,11 +5,9 @@
 @section('content')
         <div class="col-xl-8 col-md-8 col-md-12">
             <div class="card shadow mb-4">
-                <!-- Card Header - Dropdown -->
                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                     <h6 class="m-0 font-weight-bold text-primary">Purchase Order</h6>
                 </div>
-                    <!-- Card Body -->
                     <div class="card-body">                 
                         <div class="form-row">
                             <div class="form-group col-md-3">
@@ -31,7 +29,7 @@
                                 </div>
                             </div>
                             <div class="form-group col-md-3">
-                                <button class="btn btn-primary btn-block">Search</button>
+                                <button class="btn btn-primary btn-block" id="search">Search</button>
                             </div>
                             <div class="form-group col-md-1"></div>
                         </div>  
@@ -70,30 +68,30 @@
         </div>
         @include('Pages.Modal.PurchaseOrderDetails')
         <script>
-        
-            $("#polist").on("click","tbody tr",function(){
-                $(this).addClass('RowHighlight').siblings().removeClass('RowHighlight');
-            });
-                
-            $("#po-search").on("keyup",function(){
-                $.getScript('/js/Search.js', function() {
+            $(document).ready(function(){
+                $("#polist").on("click","tbody tr",function(){
+                    $(this).addClass('RowHighlight').siblings().removeClass('RowHighlight');
+                });
+
+                $("#po-search").on("keyup",function(){
+                    $.getScript('/js/Search.js', function() {
                         Search("po-search","polist","tr","td",1);
                     });
-            });
+                 });
 
-            $("#dtfrom").datepicker({
-                format: "mm/dd/yyyy",
-                startDate: "01/01/2019",
-                autoclose: true
-            });
+                 $("#dtfrom").datepicker({
+                    format: "mm/dd/yyyy",
+                    startDate: "01/01/2019",
+                    autoclose: true
+                });
 
-            $("#dtto").datepicker({
-                format: "mm/dd/yyyy",
-                startDate: $("#dtfrom").val(),
-                autoclose: true
-            });
+                $("#dtto").datepicker({
+                    format: "mm/dd/yyyy",
+                    startDate: $("#dtfrom").val(),
+                    autoclose: true
+                });
 
-             $("#polist").on("click","tbody tr a",function(){
+                $("#polist").on("click","tbody tr a",function(){
                     var CurrentRow = $(this).closest("tr");
                     var pocode = CurrentRow.find("td:eq(0)").text();
                     $("#pono").val(CurrentRow.find("td:eq(1)").text());
@@ -109,16 +107,24 @@
                             pocode:pocode
                         },
                         success:function(result){
-                            $.each(JSON.parse(result.message), function( i, item ) {
+                            if(result.message=="success"){
+                                $.each(JSON.parse(result.podetails), function( i, item ) {
                                     ListItems(item.stockdesc,item.unit,item.qty,item.cost,item.amount);
-                            });
+                                });
+                            }
+                            else{
+                                Swal.fire(
+                                    'Something went wrong.',
+                                    '',
+                                    'error'
+                                )
+                            }
                         }
                     });
-
                     $("#purchaseorder-details").modal("show");
-             });
+                });
 
-             function ListItems(stockdesc_,unit_,qty_,cost_,amount_){
+                function ListItems(stockdesc_,unit_,qty_,cost_,amount_){
                     var po_item = "<tr>  \
                                     <td> " + stockdesc_  + " </td>  \
                                     <td> " + unit_       + " </td>  \
@@ -127,7 +133,73 @@
                                     <td class='text-right'> " + amount_     + " </td>  \
                                 </tr>"
                     $("#po-details tbody").append(po_item);
-             }
+                };
+             
+                $("#search").on("click",function(){
+                    var dtfrom = $("#dtfrom").val();
+                    var dtto = $("#dtto").val();
 
+                    if(dtfrom == ""){
+                        Swal.fire(
+                            'Please fill-in date From.',
+                            '',
+                            'error'
+                        )
+                    }
+                    else if(dtto == ""){
+                        Swal.fire(
+                            'Please fill-in date To.',
+                            '',
+                            'error'
+                        )
+                    }
+                    else {
+                        $.ajax({
+                            type: "GET",
+                            url: "/purchaseorder/period",
+                            data:{
+                                dtfrom:dtfrom,
+                                dtto:dtto
+                            },
+                            success:function(result){
+                                $("#polist tbody tr").empty();
+                                if(result.message=="success"){     
+                                        $.each(JSON.parse(result.purchaseorder),function(i,item){
+                                                ListPurchaseorder(item.purchaseorder_code,item.pono,item.podate,item.terms,item.amount,item.supplier,item.remarks)
+                                        });                                      
+                                }
+                                else if(result.message=="nodata"){
+                                        Swal.fire(
+                                            "There's No data.",
+                                            'Please select period.',
+                                            'warning'
+                                            )
+                                }
+                                else{
+                                    Swal.fire(
+                                        'Something went wrong.',
+                                        '',
+                                        'error'
+                                    )
+                                }
+                            }
+                        });
+                    }
+                }); 
+
+                function ListPurchaseorder(pocode_,pono_,podate_,terms_,amount_,supplier_,remarks_){
+                    var purchaseorder = "<tr> \
+                                            <td hidden>" + pocode_ + "</td> \
+                                            <td>" + pono_ + "</td> \
+                                            <td>" + podate_ + "</td> \
+                                            <td class='text-right'>" + terms_ + "</td> \
+                                            <td class='text-right'>" + amount_ + "</td> \
+                                            <td>" + supplier_ + "</td> \
+                                            <td>" + remarks_ + "</td> \
+                                            <th class='text-center'><a href='#'><i class='fas fa-bars' style'color:#427bf5;'></i></a></th> \
+                                        </tr>";
+                    $("#polist tbody").append(purchaseorder);
+                };           
+            });
         </script>
 @endsection

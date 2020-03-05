@@ -26,9 +26,12 @@ Route::get('/purchaseorder/masterfile','PurchaseorderController@purchaseordermas
 Route::get('/purchaseorder/supplier','PurchaseorderController@purchaseordersupplier');
 Route::post('/purchaseorder/save/transaction','PurchaseorderController@purchaseordersavetransaction');
 Route::get('/purchaseorder/details','PurchaseorderController@purchaseorderdetails');
+Route::get('/purchaseorder/period','PurchaseorderController@purchaseorderperiod');
+Route::get('/purchaseorder/list','PurchaseorderController@purchaseorderlist');
 
 //Stock Receive
 Route::get('/stockreceive','StockReceiveController@stockreceive');
+Route::get('/stockreceive/create','StockReceiveController@stockreceivecreate');
 
 //For Test
 Route::get('/test','TestController@test');

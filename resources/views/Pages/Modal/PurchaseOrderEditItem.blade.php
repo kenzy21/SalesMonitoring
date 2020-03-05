@@ -36,50 +36,49 @@
 
 <script>
     $("#purchaseorder-edititem").on("show.bs.modal",function(){
-            setTimeout(function(){
-                $("#quantity-edititem").select();
-            },500);
+        setTimeout(function(){
+            $("#quantity-edititem").select();
+        },500);
     });
 
     $("#purchaseorder-edititem").on("hide.bs.modal",function(){
-            $("#edit-item").trigger("reset");
+        $("#edit-item").trigger("reset");
     });
 
     $("#quantity-edititem").keypress(function(event){
-            var keycode = (event.keyCode ? event.keyCode : event.which);
-            var rowidx,costedit,qtyedit,qtyamount;
-              
-            rowidx = $("#rowno").val();
-            cost = $("#cost-edititem").val();
-            qty = $("#quantity-edititem").val();
-            amount = parseFloat(cost.replace(/,/ig,'')) * parseFloat(qty.replace(/,/ig,''))
+        var keycode = (event.keyCode ? event.keyCode : event.which);
+        var rowidx,costedit,qtyedit,qtyamount;
+          
+        rowidx = $("#rowno").val();
+        cost = $("#cost-edititem").val();
+        qty = $("#quantity-edititem").val();
+        amount = parseFloat(cost.replace(/,/ig,'')) * parseFloat(qty.replace(/,/ig,''))
 
-            if(keycode == 13){
-                if(qty.trim()=="" || parseFloat(qty)==0){
-                      Swal.fire(
-                        'Please provide quantity.',
-                        '',
-                        'warning'
-                      )
-                }
-                else if(cost.trim()=="" || parseFloat(cost)==0){
-                      Swal.fire(
-                          'Please provide cost.',
-                          '',
-                          'warning'
-                        )
-                }
-                else{
-                    $.getScript('/js/EditCurrentCell.js', function() {
-                            UpdateTableData("list-items",rowidx,4,qty);
-                            UpdateTableData("list-items",rowidx,5,accounting.formatMoney(cost, { symbol: "",  format: "%v %s" }));
-                            UpdateTableData("list-items",rowidx,6,accounting.formatMoney(amount, { symbol: "",  format: "%v %s" }));
-                            SetTotalAmount();
-
-                            $("#purchaseorder-edititem").modal("hide");
-                        });
-                }
-
+        if(keycode == 13){
+            if(qty.trim()=="" || parseFloat(qty)==0){
+                  Swal.fire(
+                    'Please provide quantity.',
+                    '',
+                    'warning'
+                  )
             }
-      });
+            else if(cost.trim()=="" || parseFloat(cost)==0){
+                  Swal.fire(
+                      'Please provide cost.',
+                      '',
+                      'warning'
+                    )
+            }
+            else{
+                $.getScript('/js/EditCurrentCell.js', function() {
+                    UpdateTableData("list-items",rowidx,4,qty);
+                    UpdateTableData("list-items",rowidx,5,accounting.formatMoney(cost, { symbol: "",  format: "%v %s" }));
+                    UpdateTableData("list-items",rowidx,6,accounting.formatMoney(amount, { symbol: "",  format: "%v %s" }));
+                    SetTotalAmount();
+
+                    $("#purchaseorder-edititem").modal("hide");
+                });
+             }
+          }
+       });
 </script>

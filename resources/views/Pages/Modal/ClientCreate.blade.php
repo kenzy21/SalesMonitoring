@@ -53,9 +53,8 @@
           confirmButtonColor: '#3085d6',
           cancelButtonColor: '#d33',
           confirmButtonText: 'Yes'
-        }).then((result) =>{
-            if(result.value){
-              
+        }).then((result) => {
+            if(result.value){             
                 $.ajax({
                     type: "POST",
                     url: "/client/create",
@@ -84,11 +83,9 @@
                             'error'
                           )
                         }
-                    }
+                     }
                 });
-
-            }
-        })
-        
+             }
+        });        
     });
 </script>

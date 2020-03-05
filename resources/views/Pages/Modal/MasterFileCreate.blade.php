@@ -76,113 +76,114 @@
 </div>
 
 <script>
-  $("#masterfile-create-modal").on("show.bs.modal",function(){
-
-      setTimeout(function(){ 
-        $("#barcode").focus();
+    $("#masterfile-create-modal").on("show.bs.modal",function(){
+        setTimeout(function(){ 
+          $("#barcode").focus();
         }, 500);
 
         $.ajax({
-          type: "GET",
-          url: "/masterfile/classification",
-          success:function(result){
-              var options = {
-                data: result.classification,
-                list:{
-                  match:{
-                      enabled: true
+            type: "GET",
+            url: "/masterfile/classification",
+            success:function(result){
+                var options = {
+                  data: result.classification,
+                  adjustWidth: false,
+                  list:{
+                    match:{
+                        enabled: true
+                      }
+                    }
+                  };
+                $("#classification").easyAutocomplete(options);
+              }
+          });
+
+          $.ajax({
+              type: "GET",
+              url: "/masterfile/generic",
+              success:function(result){
+                var options = {
+                  data: result.generic,
+                  adjustWidth: false,
+                  list:{
+                    match:{
+                      enable: true
                     }
                   }
                 };
-                $("#classification").easyAutocomplete(options);
+                $("#generic").easyAutocomplete(options);
               }
-            });
-
-          $.ajax({
-            type: "GET",
-            url: "/masterfile/generic",
-            success:function(result){
-              var options = {
-                data: result.generic,
-                list:{
-                  match:{
-                    enable: true
-                  }
-                }
-              };
-              $("#generic").easyAutocomplete(options);
-            }
           });
       });
 
-         $("#masterfile-create-modal").on("hide.bs.modal",function(){
-                $("#masterfile-save").trigger("reset");
-                location.href = "/masterfile";
-             });
+      $("#masterfile-create-modal").on("hide.bs.modal",function(){
+            $("#masterfile-save").trigger("reset");
+            location.href = "/masterfile";
+      });
 
-         $("#masterfile-save-data").on("click",function(){
+      $("#masterfile-save-data").on("click",function(){
 
-                var barcode,description,classification,generic,unit,reorder,cost,active,serialize;
+          var barcode,description,classification,generic,unit,reorder,cost,active,serialize;
 
-                barcode = $("#barcode").val();
-                description = $("#description").val();
-                classification = $("#classification").val();
-                generic = $("#generic").val();
-                unit = $("#unit").val();
-                stocktag = $("#stocktag").val();
-                reorder = $("#reorder").val();
-                cost = $("#cost").val();
-                active = $("#active").val();
-                serialize = $("#serialize").val();
+          barcode = $("#barcode").val();
+          description = $("#description").val();
+          classification = $("#classification").val();
+          generic = $("#generic").val();
+          unit = $("#unit").val();
+          stocktag = $("#stocktag").val();
+          reorder = $("#reorder").val();
+          cost = $("#cost").val();
+          active = $("#active").val();
+          serialize = $("#serialize").val();
 
-                Swal.fire({
-                    title: 'Are you sure you want to save it?',
-                    text: "",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Yes'
-                  }).then( (result) => {
-                      if(result.value) {
-                            $.ajax({
-                                type: "POST",
-                                url: "/masterfile/create",
-                                data:{
-                                    barcode:barcode,
-                                    description:description,
-                                    classification:classification,
-                                    generic:generic,
-                                    unit:unit,
-                                    stocktag:stocktag,
-                                    reorder:reorder,
-                                    cost:cost,
-                                    active:active,
-                                    serialize:serialize
-                                },
-                                success:function(result){
-                                  var infomessage;
-                                  infomessage = result.message;
-                                  if (infomessage == "success"){
-                                    Swal.fire(
-                                      'Saved!',
-                                      'Successfully saved!',
-                                      'success'
-                                    ).then(function(){
-                                      $("#masterfile-save").trigger("reset");
-                                      $("#barcode").select();
-                                    })
-                                  }
-                                  else{
-                                    Swal.fire(
-                                      'Please check the error below.',
-                                      infomessage,
-                                      'error'
-                                    )
-                                  }
-                                }
-                            });
+          Swal.fire({
+              title: 'Are you sure you want to save it?',
+              text: "",
+              icon: 'question',
+              showCancelButton: true,
+              confirmButtonColor: '#3085d6',
+              cancelButtonColor: '#d33',
+              confirmButtonText: 'Yes'
+            }).then( (result) => {
+                if(result.value) {
+                    $.ajax({
+                        type: "POST",
+                        url: "/masterfile/create",
+                        data:{
+                            barcode:barcode,
+                            description:description,
+                            classification:classification,
+                            generic:generic,
+                            unit:unit,
+                            stocktag:stocktag,
+                            reorder:reorder,
+                            cost:cost,
+                            active:active,
+                            serialize:serialize
+                        },
+                        success:function(result){
+                          var infomessage;
+                          infomessage = result.message;
+                          if (infomessage == "success"){
+                            Swal.fire(
+                              'Saved!',
+                              'Successfully saved!',
+                              'success'
+                            ).then(function(){
+                              $("#masterfile-save").trigger("reset");
+                              $("#barcode").select();
+                            })
+                          }
+                          else{
+                            Swal.fire(
+                              'Please check the error below.',
+                              infomessage,
+                              'error'
+                          )
+                        }
                       }
                   });
+                }
             });
+        });
 </script>

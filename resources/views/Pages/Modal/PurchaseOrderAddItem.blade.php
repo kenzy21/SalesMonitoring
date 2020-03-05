@@ -32,7 +32,6 @@
     </div>
   </div>
 </div>
-
 <script>
 
     var stockcode,stockdesc,unit,cost,quantity;
@@ -52,59 +51,59 @@
                 adjustWidth: false,
                 placeholder: "Stock Description",
                 list:{
-                      match:{
-                          enabled: true
-                        },
-                        onChooseEvent:function() {
-                         stockcode = $("#description-additem").getSelectedItemData().stockcode;
-                         stockdesc = $("#description-additem").getSelectedItemData().stockdesc;
-                         unit = $("#description-additem").getSelectedItemData().unit;
-                         cost = $("#description-additem").getSelectedItemData().currcost;
+                    match:{
+                        enabled: true
+                      },
+                      onChooseEvent:function() {
+                        stockcode = $("#description-additem").getSelectedItemData().stockcode;
+                        stockdesc = $("#description-additem").getSelectedItemData().stockdesc;
+                        unit = $("#description-additem").getSelectedItemData().unit;
+                        cost = $("#description-additem").getSelectedItemData().currcost;
 
-                        $("#unit-additem").val(unit);
-                        $("#cost-additem").val(accounting.formatMoney(cost, { symbol: "",  format: "%v %s" }));
-                        $("#quantity-additem").val(1);
-                        $("#quantity-additem").select();
+                      $("#unit-additem").val(unit);
+                      $("#cost-additem").val(accounting.formatMoney(cost, { symbol: "",  format: "%v %s" }));
+                      $("#quantity-additem").val(1);
+                      $("#quantity-additem").select();
                     }
                   }
                 };
                 $("#description-additem").easyAutocomplete(options);
               }
-            });
+          });
       });
 
       $("#quantity-additem").keypress(function(event){
             var keycode = (event.keyCode ? event.keyCode : event.which);
             
             if(keycode == '13'){
-                  quantity = $("#quantity-additem").val();
-                  cost = $("#cost-additem").val();
+                quantity = $("#quantity-additem").val();
+                cost = $("#cost-additem").val();
 
-                  if(quantity.trim()=="" || parseFloat(quantity)==0){
-                        Swal.fire(
-                            'Please provide quantity.',
+                if(quantity.trim()=="" || parseFloat(quantity)==0){
+                      Swal.fire(
+                          'Please provide quantity.',
+                          '',
+                          'warning'
+                      )
+                } 
+                else if(cost.trim()=="" || parseFloat(cost)==0){
+                    Swal.fire(
+                            'Please provide cost.',
                             '',
                             'warning'
                         )
-                  } 
-                  else if(cost.trim()=="" || parseFloat(cost)==0){
-                      Swal.fire(
-                              'Please provide cost.',
-                              '',
-                              'warning'
-                          )
-                  }
-                  else{
-                        InsertIntoTable(stockcode,stockdesc,unit,cost,quantity);
-                        $("#purchaseorder-additem").modal("hide");
-                        $("#add-item").trigger("reset");
-                  }      
+                }
+                else{
+                      InsertIntoTable(stockcode,stockdesc,unit,cost,quantity);
+                      $("#purchaseorder-additem").modal("hide");
+                      $("#add-item").trigger("reset");
+                }      
             }
       });
 
       function InsertIntoTable(stockcode_,stockdesc_,unit_,cost_,quantity_){
           var total = parseFloat(cost_.replace(/,/ig,'')) * quantity_;
-              total = accounting.formatMoney(total, { symbol: "",  format: "%v %s" })
+          total = accounting.formatMoney(total, { symbol: "",  format: "%v %s" });
           var additem = "<tr> \
                               <td> " +  "" + " </td> \
                               <td hidden> " +  stockcode_ + " </td> \
@@ -141,20 +140,20 @@
                 cancelButtonColor: '#d33',
                 confirmButtonText: 'Yes'
             }).then((result) => {
-                if(result.value){
-                    if($("#list-items tbody tr").length == 1){
-                          $("#total-amount").val("0.00")
-                    }
-                    $(this).closest("tr").remove();
-                    SetRow();
+              if(result.value){
+                  if($("#list-items tbody tr").length == 1){
+                        $("#total-amount").val("0.00")
+                  }
+                  $(this).closest("tr").remove();
+                  SetRow();
                 }
             });
       });
 
     function SetTotalAmount(){
         $.getScript('/js/GetTotalAmount.js',function(){
-              var totalamount = TotalAmount("#list-items tr",6);
-              $("#total-amount").val(totalamount);
+            var totalamount = TotalAmount("#list-items tr",6);
+            $("#total-amount").val(totalamount);
         });
-    }
+    };
 </script>

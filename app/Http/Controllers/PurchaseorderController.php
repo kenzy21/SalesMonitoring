@@ -23,10 +23,31 @@ class PurchaseorderController extends Controller
             DB::raw("DATE_FORMAT(purchaseorder_date,'%m/%d/%Y') podate"),
             DB::raw("(SELECT FORMAT(SUM(cost * qty),2) FROM purchaseorder_details WHERE purchaseorder_details.purchaseorder_code = purchaseorder_header.purchaseorder_code) amount"),
             DB::raw("(SELECT supplier_name FROM salesmonitoring.supplier WHERE suppcode = purchaseorder_header.suppcode) supplier"))
+        ->whereRaw("DATE_FORMAT(purchaseorder_date,'%Y-%m') = DATE_FORMAT(NOW(),'%Y-%m')")
         ->orderBY("purchaseorder_date","DESC")
         ->get();
 
         return view('Pages.PurchaseOrder',compact('purchaseorders'));
+    }
+
+    public function purchaseorderperiod(Request $request){
+        $dtfrom = $this->ConvertDate($request->dtfrom);
+        $dtto = $this->ConvertDate($request->dtto);
+
+        $purchaseorders = DB::table('salesmonitoring.purchaseorder_header')
+        ->select('terms','remarks','purchaseorder_code',
+            DB::raw("CONCAT(purchaseorder_prefix,'-',purchaseorder_code) pono"),
+            DB::raw("DATE_FORMAT(purchaseorder_date,'%m/%d/%Y') podate"),
+            DB::raw("(SELECT FORMAT(SUM(cost * qty),2) FROM purchaseorder_details WHERE purchaseorder_details.purchaseorder_code = purchaseorder_header.purchaseorder_code) amount"),
+            DB::raw("(SELECT supplier_name FROM salesmonitoring.supplier WHERE suppcode = purchaseorder_header.suppcode) supplier"))
+        ->whereRaw("DATE_FORMAT(purchaseorder_date,'%Y-%m-%d') BETWEEN '$dtfrom' AND '$dtto'")
+        ->orderBY("purchaseorder_date","DESC")
+        ->get();
+        
+        if(count($purchaseorders)==0){
+            return response()->json(["message"=>"nodata"]);
+        }
+        return response()->json(["message"=>"success","purchaseorder"=>json_encode($purchaseorders)]);
     }
 
     public function purchaseordercreate(){
@@ -51,6 +72,19 @@ class PurchaseorderController extends Controller
         $supplier = Supplier::all('suppcode','supplier_name','supplier_address','terms');
         
         return response()->json(["supplier"=>$supplier]);
+    }
+
+    public function purchaseorderlist(){
+        $polist = DB::table("salesmonitoring.purchaseorder_header")
+            ->select('terms','purchaseorder_code','suppcode',
+                    DB::raw("DATE_FORMAT(purchaseorder_date,'%m/%d/%Y') podate"),
+                    DB::raw("(SELECT supplier_name FROM salesmonitoring.supplier WHERE suppcode = purchaseorder_header.suppcode) supplier"),
+                    DB::raw("(SELECT supplier_address FROM salesmonitoring.supplier WHERE suppcode = purchaseorder_header.suppcode) address"),
+                    DB::raw("CONCAT(purchaseorder_prefix,'-',purchaseorder_code) pono"))
+            ->orderBy("purchaseorder_date")
+            ->get();
+
+        return response()->json(["polist"=>$polist]);
     }
 
     public function purchaseordersavetransaction(Request $request){
@@ -97,14 +131,21 @@ class PurchaseorderController extends Controller
         $pocode = $request->pocode;
 
         $podetails = DB::table("salesmonitoring.purchaseorder_details")
-        ->select('qty','unit',
+        ->select('qty','unit','stockcode',
             DB::raw("(SELECT stockdesc FROM masterfile WHERE stockcode = purchaseorder_details.stockcode) stockdesc"),
             DB::raw("FORMAT(cost,2) cost"),
+            DB::raw("(qty * cost) amount_"),
             DB::raw("FORMAT((qty * cost),2) amount"))
         ->where("purchaseorder_code",$pocode)
         ->orderBy("stockdesc")
         ->get();
 
-        return response()->json(["message"=>json_encode($podetails)]);
+        if(count($podetails)==0){
+            return response()->json(["message"=>"nodata"]);
+        }
+
+        $poamount = array_sum($this->ConvertCollectionToArray($podetails,"amount_"));
+
+        return response()->json(["message"=>"success","podetails"=>json_encode($podetails),"poamount"=>$poamount]);
     }
 }

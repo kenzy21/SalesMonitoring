@@ -39,13 +39,10 @@
 </div>
 
 <script>
-
     $("#supplier-edit-modal").on("show.bs.modal",function(){
-
         setTimeout(function(){
-                $("#supplier-name-edit").focus();
-            },500);
-
+            $("#supplier-name-edit").focus();
+        },500);
     });
 
     $("#supplier-edit-data").on("click",function(){
@@ -67,8 +64,7 @@
             cancelButtonColor: '#d33',
             confirmButtonText: 'Yes'
         }).then((result) => {
-            if(result.value){
-                
+            if(result.value){          
                 $.ajax({
                     type: "POST",
                     url: "/supplier/edit",
@@ -106,7 +102,6 @@
             $("#supplier-edit").trigger("reset");
             location.href = "/supplier";
         });
-
     });
     
 </script>

@@ -5,39 +5,36 @@
 @section('content')
     <div class="col-xl-8 col-md-8 col-md-12">
             <div class="card shadow mb-4">
-                <!-- Card Header - Dropdown -->
                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                     <h6 class="m-0 font-weight-bold text-primary">Stock Receive</h6>
                 </div>
-                    <!-- Card Body -->
                     <div class="card-body">
                         <div class="form-row">
-                            <div class="form-group col-md-2">
-                                <a href="#" class="btn btn-primary btn-block" style="margin-bottom:10px;">Create</a>
+                            <div class="form-group col-md-3">
+                                <a href="{{ url('/stockreceive/create') }}" class="btn btn-primary btn-block" style="margin-bottom:10px;">Stock Receive</a>
                             </div>
-                            <div class="form-group col-md-10"></div>
+                            <div class="form-group col-md-9"></div>
                         </div>       
                         <div class="form-row">
-                            <div class="form-group col-md-2">
+                            <div class="form-group col-md-3">
                                 <div class="InputWithIcon">
                                     <input class="form-control-custom" name="dtfrom" id="dtfrom" placeholder = "From" >
                                     <i class="fas fa-calendar-alt" style="color:gray;"></i>
                                 </div>
                             </div>
-                            <div class="form-group col-md-2">
+                            <div class="form-group col-md-3">
                                 <div class="InputWithIcon">
                                     <input class="form-control-custom" name="dtfrom" id="dtto" placeholder = "To" >
                                     <i class="fas fa-calendar-alt" style="color:gray;"></i>
                                 </div>
                             </div>
-                            <div class="form-group col-md-1">
+                            <div class="form-group col-md-3">
                                 <button class="btn btn-primary btn-block">Search</button>
                             </div>
-                            <div class="form-group col-md-2"></div>
-                            <div class="form-group col-md-5">
-                                <input type="text" class="form-control" placeholder="SEARCH RR NO.">
-                            </div>
-                        </div>                              
+                            <div class="form-group col-md-3"></div>
+                        </div>     
+                        <input type="text" class="form-control" placeholder="SEARCH RR NO.">
+                        <hr>                         
                         <div style="overflow-x:auto;">  
                             <table class="table" id="rrlist">
                                 <thead class="thead-light">
@@ -71,7 +68,6 @@
                 startDate: $("#dtfrom").val(),
                 autoclose: true
             });
-
         });
     </script>
 @endsection

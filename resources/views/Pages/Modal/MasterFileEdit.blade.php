@@ -81,116 +81,115 @@
 <script>
   $("#masterfile-edit-modal").on("show.bs.modal",function(){
 
-      setTimeout(function(){ 
-        document.getElementById('barcode-edit').focus();}, 500);
+        setTimeout(function(){ 
+            $('#barcode-edit').focus();
+        },500);
 
         $.ajax({
           type: "GET",
           url: "/masterfile/classification",
           success:function(result){
-              var options = {
-                data: result.classification,
-                adjustWidth: false,
-                list:{
-                  match:{
-                          enabled: true
-                    }
-                  }
-                };
-                $("#classification-edit").easyAutocomplete(options);
-              }
-            });
-
-          $.ajax({
-            type: "GET",
-            url: "/masterfile/generic",
-            success:function(result){
-              var options = {
-                data: result.generic,
-                adjustWidth: false,
-                list:{
-                  match:{
-                    enable: true
+            var options = {
+              data: result.classification,
+              adjustWidth: false,
+              list:{
+                match:{
+                        enabled: true
                   }
                 }
               };
-              $("#generic-edit").easyAutocomplete(options);
+              $("#classification-edit").easyAutocomplete(options);
             }
-          });
         });
 
-        $("#masterfile-edit-data").on("click",function(){
-
-            var stockcode,barcode,description,classification,generic,unit,stocktag,reorder,cost,active,serialize;
-
-            stockcode = $("#stockcode-edit").val();
-            barcode = $("#barcode-edit").val();
-            description = $("#description-edit").val();
-            classification = $("#classification-edit").val();
-            generic = $("#generic-edit").val();
-            unit = $("#unit-edit").val();
-            stocktag = $("#stocktag-edit").val();
-            reorder = $("#reorder-edit").val();
-            cost = $("#cost-edit").val();
-            active = $("#active-edit").val().trim();
-            serialize = $("#serialize-edit").val();
-
-            Swal.fire({
-                title: 'Are you sure you want to update it?',
-                text: "",
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes'
-            }).then((result) => {
-                if (result.value) {
-
-                    $.ajax({
-                        type: "POST",
-                        url: "/masterfile/update",
-                        data: {
-                            stockcode:stockcode,
-                            barcode:barcode,
-                            description:description,
-                            classification:classification,
-                            generic:generic,
-                            unit:unit,
-                            stocktag:stocktag,
-                            reorder:reorder,
-                            cost:cost,
-                            active:active,
-                            serialize:serialize
-                        },
-                        success:function(result){
-                          var infomessage;
-                          infomessage = result.message;
-
-                          if(infomessage == "success"){
-                            Swal.fire(
-                            'Saved!',
-                            'Successfully updated!',
-                            'success'
-                          ).then(function(){
-                            $("#masterfile-edit-modal").modal("hide");
-                          });
-                          }
-                          else{
-                            Swal.fire(
-                            'Please check the error below.',
-                            infomessage,
-                            'error'
-                          )
-                          }
-                        }
-                    });
-
+        $.ajax({
+          type: "GET",
+          url: "/masterfile/generic",
+          success:function(result){
+            var options = {
+              data: result.generic,
+              adjustWidth: false,
+              list:{
+                match:{
+                  enable: true
                 }
-            })
+              }
+            };
+            $("#generic-edit").easyAutocomplete(options);
+          }
         });
+    });
 
-        $("#masterfile-edit-modal").on("hide.bs.modal",function(){
-          location.href = "/masterfile";
-          $("#masterfile-edit").trigger("reset");
-        });
+    $("#masterfile-edit-data").on("click",function(){
+
+        var stockcode,barcode,description,classification,generic,unit,stocktag,reorder,cost,active,serialize;
+
+        stockcode = $("#stockcode-edit").val();
+        barcode = $("#barcode-edit").val();
+        description = $("#description-edit").val();
+        classification = $("#classification-edit").val();
+        generic = $("#generic-edit").val();
+        unit = $("#unit-edit").val();
+        stocktag = $("#stocktag-edit").val();
+        reorder = $("#reorder-edit").val();
+        cost = $("#cost-edit").val();
+        active = $("#active-edit").val().trim();
+        serialize = $("#serialize-edit").val();
+
+        Swal.fire({
+            title: 'Are you sure you want to update it?',
+            text: "",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes'
+        }).then((result) => {
+            if (result.value) {
+                $.ajax({
+                    type: "POST",
+                    url: "/masterfile/update",
+                    data: {
+                        stockcode:stockcode,
+                        barcode:barcode,
+                        description:description,
+                        classification:classification,
+                        generic:generic,
+                        unit:unit,
+                        stocktag:stocktag,
+                        reorder:reorder,
+                        cost:cost,
+                        active:active,
+                        serialize:serialize
+                    },
+                    success:function(result){
+                      var infomessage;
+                      infomessage = result.message;
+
+                      if(infomessage == "success"){
+                        Swal.fire(
+                        'Saved!',
+                        'Successfully updated!',
+                        'success'
+                      ).then(function(){
+                        $("#masterfile-edit-modal").modal("hide");
+                      });
+                      }
+                      else{
+                        Swal.fire(
+                        'Please check the error below.',
+                        infomessage,
+                        'error'
+                      )
+                    }
+                  }
+              });
+            }
+        })
+    });
+
+    $("#masterfile-edit-modal").on("hide.bs.modal",function(){
+        location.href = "/masterfile";
+        $("#masterfile-edit").trigger("reset");
+    });
   </script>

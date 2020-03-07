@@ -9,7 +9,7 @@
                 <h6 class="m-0 font-weight-bold text-primary">Stock Receive (RR)</h6>
             </div>
             <div class="card-body">   
-                <form id="purchaseorder-create">
+                <form id="stockreceive-create">
                     <div class="form-row">
                         <div class="form-group col-md-12">
                             <input id="pono" type="text" class="form-control" placeholder="PO NO.">
@@ -49,7 +49,7 @@
                                 <th style="width:60px;" class="text-right">Qty</th>
                                 <th style="width:90px;" class="text-right"> Cost</th>
                                 <th style="width:120px;" class="text-right">Total</th>
-                                <th style="width:30px;" class="text-center">Action</th>
+                                <th style="width:120px;" class="text-center">Action</th>
                             </thead>
                             <tbody>
                             </tbody>
@@ -75,10 +75,11 @@
                             <div class="form-group">
                                 <button class="btn btn-primary btn-block" id="save-transaction" style="float:right; margin-top:10px">Save Transaction</button>
                             </div>
-                    </div>         
-             </div>
-        </div>
-    </div>
+                        </div>     
+                    </div>
+                </div>
+            </div>
+    @include('Pages.Modal.StockreceiveEditItem');
     <script>
         $(document).ready(function(){
             var pocode,suppcode;
@@ -87,17 +88,17 @@
                 $("#pono").focus();
             },500);
 
-            $("#discount-amount").on("keypress",function(event){
-                return isNumberKey(event);
-            });
+            //Shortcut keys
+            document.onkeyup = KeyCheck;
 
-            function isNumberKey(evt){
-                var charCode = (evt.which) ? evt.which : event.keyCode
-                if (charCode != 46 && charCode > 31 
-                    && (charCode < 48 || charCode > 57))
-                    return false;
-                    return true;
+            function KeyCheck(e){
+                var KeyID = (window.event) ? event.keyCode : e.keyCode;
+
+                if(KeyID == 113){
+                    $("#save-transaction").trigger("click");
+                }
             };
+            //End 
 
             $.ajax({
                 type: "GET",
@@ -162,6 +163,78 @@
                             $("#pono").easyAutocomplete(options);
                          }
                     });
+            
+            //Clear fields when refresh | discount input events
+            document.getElementById('stockreceive-create').reset();
+
+            function ClearFields(){
+                $("#gross-amount").val("0.00");
+                $("#discount-amount").val("0.00");
+                $("#net-amount").val("0.00")
+            };
+
+            ClearFields();
+
+            $("#discount-amount").on("focus",function(){
+                $("#discount-amount").select();
+            });
+
+            $("#discount-amount").on("focusout",function(){
+                var discount = $("#discount-amount").val();
+
+                $("#discount-amount").val(accounting.formatMoney(discount, { symbol: "",  format: "%v %s" }))
+            });
+            
+            function SetTotalAmountDiscount(){
+                var gross = $("#gross-amount").val();
+                var discount = $("#discount-amount").val();
+                var net = parseFloat(gross.replace(",","")) - parseFloat(discount.replace(",",""));
+                $("#net-amount").val(accounting.formatMoney(net, { symbol: "",  format: "%v %s" }));
+            }
+
+            function SetTotalAmount(){
+                $.getScript('/js/GetTotalAmount.js',function(){
+                    var totalamount = TotalAmount("#list-items tr",6);
+                    $("#gross-amount").val(totalamount);
+                    SetTotalAmountDiscount();
+                });
+            };
+
+            function SetRow(){
+                $('#list-items tbody tr').each(function(idx){
+                    $(this).children(":eq(0)").html(idx + 1);
+                });
+                SetTotalAmount();
+            };
+
+            $("#discount-amount").on("keypress",function(event){
+                return isNumberKey(event);
+            });
+
+            function isNumberKey(evt){
+                var charCode = (evt.which) ? evt.which : event.keyCode
+                if (charCode != 46 && charCode > 31 
+                    && (charCode < 48 || charCode > 57))
+                    return false;
+                    return true;
+            };
+
+            $("#discount-amount").on("keyup",function(){
+                var discount = $("#discount-amount").val();
+                if(discount == ""){
+                    $("#discount-amount").val(accounting.formatMoney(0, { symbol: "",  format: "%v %s" }))
+                    SetTotalAmountDiscount();
+                    $("#discount-amount").select();
+                }
+                else{
+                    SetTotalAmountDiscount();
+                }
+            });
+
+            $("#list-items").on("click","tbody tr",function(){
+                $(this).addClass('RowHighlight').siblings().removeClass('RowHighlight');
+            });
+            //End
 
             function ListPODetails(row_,stockcode_,stockdesc_,unit_,qty_,cost_,amount_){
                 var polist = "<tr>  \
@@ -173,41 +246,52 @@
                                 <td class='text-right'>" + cost_ + "</td> \
                                 <td class='text-right'>" + amount_ + "</td> \
                                 <td class='text-center'> \
-                                    <a href='#' id='remove'><span><i class='fas fa-trash-alt' style='color:#427bf5;'></i></span><a/> \
+                                    <a href='#' id='remove' title='Remove'><span><i class='fas fa-trash-alt' style='color:#427bf5;'></i></span><a/> \
                                     <span>|</span> \
-                                    <a href='#' id='edit'><span><i class='fas fa-edit' style='color:#427bf5;'></i></span></a> \
+                                    <a href='#' id='edit' title='Edit'><span><i class='fas fa-edit' style='color:#427bf5;'></i></span></a> \
+                                    <span>|</span> \
+                                    <a href='#' title='Serial'><i class='fas fa-barcode' style='color:#427bf5;'></i></a> \
                                 </td> \
                             </tr>";
                 $("#list-items tbody").append(polist);
             };
 
-            function SetRow(){
-                $('#list-items tbody tr').each(function(idx){
-                    $(this).children(":eq(0)").html(idx + 1);
+            $("#list-items").on("click","tbody td #remove",function(){
+                Swal.fire({
+                    title: "Are you sure you want to remove it?",
+                    text: "",
+                    icon: "question",
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes'
+                }).then((result) => {
+                if(result.value){
+                    if($("#list-items tbody tr").length == 1){
+                        ClearFields();
+                    }
+                    $(this).closest("tr").remove();
+                    SetRow();
+                    }
                 });
-            };
+             });
 
-            $("#discount-amount").on("keyup",function(){
-                var discount = $("#discount-amount").val();
-                if(discount == ""){
-                    $("#discount-amount").val(accounting.formatMoney(0, { symbol: "",  format: "%v %s" }))
-                    SetTotalAmountDiscount();
-                }
-                else{
-                    SetTotalAmountDiscount();
-                }
-            });
+             $("#list-items").on("click", "tbody td #edit",function(){
+                    var CurrRow = $(this).closest("tr");
+                    var rowno = CurrRow.find("td:eq(0)").text();
+                    var stockdesc = CurrRow.find("td:eq(2)").text();
+                    var unit = CurrRow.find("td:eq(3)").text();
+                    var qty = CurrRow.find("td:eq(4)").text();
+                    var cost = CurrRow.find("td:eq(5)").text();
 
-            function SetTotalAmountDiscount(){
-                var gross = $("#gross-amount").val();
-                var discount = $("#discount-amount").val();
-                var net = parseFloat(gross.replace(",","")) - parseFloat(discount.replace(",",""));
-                $("#net-amount").val(accounting.formatMoney(net, { symbol: "",  format: "%v %s" }));
-            }
+                    $("#rowno").val(rowno);
+                    $("#description-edititem").val(stockdesc);
+                    $("#unit-edititem").val(unit);
+                    $("#quantity-edititem").val(qty);
+                    $("#cost-edititem").val(cost);
+                    $("#stockreceive-edititem").modal("show");
+             });
 
-            $("#list-items").on("click","tbody tr #remove",function(){
-                alert("kenneth");
-            });
         });
     </script>
 @endsection

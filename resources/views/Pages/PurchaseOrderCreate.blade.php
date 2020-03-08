@@ -229,13 +229,13 @@
                     });
 
                     Swal.fire({
-                                title: 'Are you sure you want to save it?',
-                                text: "",
-                                icon: 'question',
-                                showCancelButton: true,
-                                confirmButtonColor: '#3085d6',
-                                cancelButtonColor: '#d33',
-                                confirmButtonText: 'Yes'
+                        title: 'Are you sure you want to save it?',
+                        text: "",
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Yes'
                         }).then((result) => {
                             if(result.value){
                                 $.ajax({

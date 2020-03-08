@@ -18,7 +18,7 @@
                     <div class="form-row">
                         <div class="form-group col-md-6">
                             <label for="">Supplier</label>
-                            <input id="supplier" type="text " class="form-control form-control-sm" style="text-transform:uppercase;" placeholder = "Supplier" readonly>
+                            <input id="supplier" type="text " class="form-control form-control-sm" style="text-transform:uppercase;" readonly>
                         </div>
                         <div class="form-gorup col-md-4">
                             <label for="">Purchase Order Date</label>
@@ -31,7 +31,7 @@
                     </div>
                     <div class="form-group">
                         <label for="">Address</label>
-                        <input type="text" id="address" class="form-control" readonly>
+                        <input type="text" id="address" class="form-control form-control-sm" readonly>
                     </div>
                     <div class="form-group">
                         <label for="">Remarks</label>
@@ -50,6 +50,8 @@
                                 <th style="width:90px;" class="text-right"> Cost</th>
                                 <th style="width:120px;" class="text-right">Total</th>
                                 <th style="width:120px;" class="text-center">Action</th>
+                                <th style="width:240px;" hidden>serial</th>
+                                <th style="width:240px;" hidden>Expiry</th>
                             </thead>
                             <tbody>
                             </tbody>
@@ -80,6 +82,8 @@
                 </div>
             </div>
     @include('Pages.Modal.StockreceiveEditItem');
+    @include('Pages.Modal.StockReceiveSerial')
+    @include('Pages.Modal.StockReceiveExpiry')
     <script>
         $(document).ready(function(){
             var pocode,suppcode;
@@ -211,6 +215,10 @@
                 return isNumberKey(event);
             });
 
+            $("#terms").on("keypress",function(event){
+                return isNumberKey(event);
+            });
+
             function isNumberKey(evt){
                 var charCode = (evt.which) ? evt.which : event.keyCode
                 if (charCode != 46 && charCode > 31 
@@ -250,8 +258,12 @@
                                     <span>|</span> \
                                     <a href='#' id='edit' title='Edit'><span><i class='fas fa-edit' style='color:#427bf5;'></i></span></a> \
                                     <span>|</span> \
-                                    <a href='#' title='Serial'><i class='fas fa-barcode' style='color:#427bf5;'></i></a> \
+                                    <a href='#' id='serial' title='Serial'><i class='fas fa-barcode' style='color:#427bf5;'></i></a> \
+                                    <span>|</span> \
+                                    <a href='#' id='expiry' title='Medicine Expiry'><i class='fas fa-file-prescription' style='color:#427bf5;'></i></a> \
                                 </td> \
+                                <td hidden></td> \
+                                <td hidden></td> \
                             </tr>";
                 $("#list-items tbody").append(polist);
             };
@@ -277,20 +289,92 @@
              });
 
              $("#list-items").on("click", "tbody td #edit",function(){
-                    var CurrRow = $(this).closest("tr");
-                    var rowno = CurrRow.find("td:eq(0)").text();
-                    var stockdesc = CurrRow.find("td:eq(2)").text();
-                    var unit = CurrRow.find("td:eq(3)").text();
-                    var qty = CurrRow.find("td:eq(4)").text();
-                    var cost = CurrRow.find("td:eq(5)").text();
+                var CurrRow = $(this).closest("tr");
+                var rowno = CurrRow.find("td:eq(0)").text();
+                var stockdesc = CurrRow.find("td:eq(2)").text();
+                var unit = CurrRow.find("td:eq(3)").text();
+                var qty = CurrRow.find("td:eq(4)").text();
+                var cost = CurrRow.find("td:eq(5)").text();
 
-                    $("#rowno").val(rowno);
-                    $("#description-edititem").val(stockdesc);
-                    $("#unit-edititem").val(unit);
-                    $("#quantity-edititem").val(qty);
-                    $("#cost-edititem").val(cost);
-                    $("#stockreceive-edititem").modal("show");
+                $("#rowno").val(rowno);
+                $("#description-edititem").val(stockdesc);
+                $("#unit-edititem").val(unit);
+                $("#quantity-edititem").val(qty);
+                $("#cost-edititem").val(cost);
+                $("#stockreceive-edititem").modal("show");
              });
+
+             $("#list-items").on("click","tbody td #serial",function(){
+                var CurrRow = $(this).closest("tr");
+                var rowno = CurrRow.find("td:eq(0)").text();
+                var stockdesc = CurrRow.find("td:eq(2)").text();
+                var qty = CurrRow.find("td:eq(4)").text();
+                var serialno = CurrRow.find("td:eq(8)").text();
+
+                document.getElementById('serial-form').reset();
+                $("#rowno-serial").val(rowno);
+                $("#description-serial").val(stockdesc);
+                $("#quantity-serial").val(qty);
+                $("#serialno").val(serialno);
+
+                $("#serial-modal").modal("show");
+             });
+
+             $("#list-items").on("click","tbody td #expiry",function(){
+                var CurrRow = $(this).closest("tr");
+                var rowno = CurrRow.find("td:eq(0)").text();
+                var stockdesc = CurrRow.find("td:eq(2)").text();
+                var expiry = CurrRow.find("td:eq(9)").text();
+                var expiry_value = expiry.split("-");
+                
+                document.getElementById('expiry-form').reset();
+                $("#rowno-expiry").val(rowno);
+                $("#description-expiry").val(stockdesc);
+                $("#dtexpiry").val(expiry_value[0]);
+                $("#batchno-expiry").val(expiry_value[1]);
+                $("#expiry-modal").modal("show");
+             });
+
+             $("#save-transaction").on("click",function(){
+                 var terms = $("#terms").val();
+
+                if(pocode == undefined){
+                    Swal.fire(
+                        'Please select PO No.',
+                        '',
+                        'error'
+                    ).then(function(){
+                        $("#pono").select();
+                    })
+                }
+                else if(terms == ""){
+                    Swal.fire(
+                        'Please select terms',
+                        '',
+                        'error'
+                    ).then(function(){
+                        $("#terms").select();
+                    })
+                }
+                else{
+                    Swal.fire({
+                        title: 'Are you sure you want to save it?',
+                        text: "",
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Yes'
+                    }).then((result) => {
+                        if(result.value){
+                            alert(pocode);
+                            alert(suppcode);
+                        }
+                    })
+                }
+             });
+
+             
 
         });
     </script>

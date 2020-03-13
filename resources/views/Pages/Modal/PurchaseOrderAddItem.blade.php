@@ -113,9 +113,9 @@
                               <td class='text-right'> " +  cost_ + " </td> \
                               <td class='text-right'> " + total + "  </td> \
                               <td class='text-center'> \
-                                  <a href='#' id='remove'><span><i class='fas fa-trash-alt' style='color:#427bf5;'></i></span><a/> \
+                                  <a href='javascript:void()' id='remove'><span><i class='fas fa-trash-alt' style='color:#427bf5;'></i></span><a/> \
                                   <span>|</span> \
-                                  <a href='#' id='edit'><span><i class='fas fa-edit' style='color:#427bf5;'></i></span></a> \
+                                  <a href='javascript:void()' id='edit'><span><i class='fas fa-edit' style='color:#427bf5;'></i></span></a> \
                               </td> \
                         </tr>";
         

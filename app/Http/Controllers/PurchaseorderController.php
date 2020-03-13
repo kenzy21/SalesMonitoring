@@ -17,36 +17,23 @@ class PurchaseorderController extends Controller
     use MasterfileTraits;
 
     public function purchaseorder(){
-        $purchaseorders = DB::table('salesmonitoring.purchaseorder_header')
-        ->select('terms','remarks','purchaseorder_code',
-            DB::raw("CONCAT(purchaseorder_prefix,'-',purchaseorder_code) pono"),
-            DB::raw("DATE_FORMAT(purchaseorder_date,'%m/%d/%Y') podate"),
-            DB::raw("(SELECT FORMAT(SUM(cost * qty),2) FROM purchaseorder_details WHERE purchaseorder_details.purchaseorder_code = purchaseorder_header.purchaseorder_code) amount"),
-            DB::raw("(SELECT supplier_name FROM salesmonitoring.supplier WHERE suppcode = purchaseorder_header.suppcode) supplier"))
-        ->whereRaw("DATE_FORMAT(purchaseorder_date,'%Y-%m') = DATE_FORMAT(NOW(),'%Y-%m')")
-        ->orderBY("purchaseorder_date","DESC")
-        ->get();
+  
+        $purchaseorders = $this->PurchaseorderHeader("","","poall");
 
         return view('Pages.PurchaseOrder',compact('purchaseorders'));
     }
 
     public function purchaseorderperiod(Request $request){
-        $dtfrom = $this->ConvertDate($request->dtfrom);
-        $dtto = $this->ConvertDate($request->dtto);
+        $dtfrom = $request->dtfrom;
+        $dtto = $request->dtto;
+        $potype = $request->potype;
 
-        $purchaseorders = DB::table('salesmonitoring.purchaseorder_header')
-        ->select('terms','remarks','purchaseorder_code',
-            DB::raw("CONCAT(purchaseorder_prefix,'-',purchaseorder_code) pono"),
-            DB::raw("DATE_FORMAT(purchaseorder_date,'%m/%d/%Y') podate"),
-            DB::raw("(SELECT FORMAT(SUM(cost * qty),2) FROM purchaseorder_details WHERE purchaseorder_details.purchaseorder_code = purchaseorder_header.purchaseorder_code) amount"),
-            DB::raw("(SELECT supplier_name FROM salesmonitoring.supplier WHERE suppcode = purchaseorder_header.suppcode) supplier"))
-        ->whereRaw("DATE_FORMAT(purchaseorder_date,'%Y-%m-%d') BETWEEN '$dtfrom' AND '$dtto'")
-        ->orderBY("purchaseorder_date","DESC")
-        ->get();
-        
+        $purchaseorders = $this->PurchaseorderHeader($dtfrom,$dtto,$potype);
+ 
         if(count($purchaseorders)==0){
             return response()->json(["message"=>"nodata"]);
         }
+
         return response()->json(["message"=>"success","purchaseorder"=>json_encode($purchaseorders)]);
     }
 
@@ -77,10 +64,11 @@ class PurchaseorderController extends Controller
     public function purchaseorderlist(){
         $polist = DB::table("salesmonitoring.purchaseorder_header")
             ->select('terms','purchaseorder_code','suppcode',
-                    DB::raw("DATE_FORMAT(purchaseorder_date,'%m/%d/%Y') podate"),
-                    DB::raw("(SELECT supplier_name FROM salesmonitoring.supplier WHERE suppcode = purchaseorder_header.suppcode) supplier"),
-                    DB::raw("(SELECT supplier_address FROM salesmonitoring.supplier WHERE suppcode = purchaseorder_header.suppcode) address"),
-                    DB::raw("CONCAT(purchaseorder_prefix,'-',purchaseorder_code) pono"))
+                DB::raw("DATE_FORMAT(purchaseorder_date,'%m/%d/%Y') podate"),
+                DB::raw("(SELECT supplier_name FROM salesmonitoring.supplier WHERE suppcode = purchaseorder_header.suppcode) supplier"),
+                DB::raw("(SELECT supplier_address FROM salesmonitoring.supplier WHERE suppcode = purchaseorder_header.suppcode) address"),
+                DB::raw("CONCAT(purchaseorder_prefix,'-',purchaseorder_code) pono"))
+            ->whereNull("stockreceive_code")
             ->orderBy("purchaseorder_date")
             ->get();
 
@@ -95,6 +83,8 @@ class PurchaseorderController extends Controller
         $po_date = Carbon::now();
 
         try{
+
+            DB::beginTransaction();
 
             $po_header = new PurchaseorderHeader;
 
@@ -119,33 +109,63 @@ class PurchaseorderController extends Controller
                     $po_details->save();
             }
      
+            DB::commit();
+
             return response()->json(["message"=>"success"]);
 
         }
         catch(Exception $e){
+            DB::rollback();
             return response()->json(["message"=>"failed"]);
         }
     }
 
     public function purchaseorderdetails(Request $request){
+        
         $pocode = $request->pocode;
+        $querytype = $request->querytype;
 
-        $podetails = DB::table("salesmonitoring.purchaseorder_details")
-        ->select('qty','unit','stockcode',
-            DB::raw("(SELECT stockdesc FROM masterfile WHERE stockcode = purchaseorder_details.stockcode) stockdesc"),
-            DB::raw("FORMAT(cost,2) cost"),
-            DB::raw("(qty * cost) amount_"),
-            DB::raw("FORMAT((qty * cost),2) amount"))
-        ->where("purchaseorder_code",$pocode)
-        ->orderBy("stockdesc")
-        ->get();
+        $podetails = $this->GetPurchaseorderDetails($pocode,$querytype);
 
         if(count($podetails)==0){
+            if($this->IsDeliveryComplete($pocode)){
+                return response()->json(["message"=>"delivered"]);
+            }
             return response()->json(["message"=>"nodata"]);
         }
 
         $poamount = array_sum($this->ConvertCollectionToArray($podetails,"amount_"));
 
-        return response()->json(["message"=>"success","podetails"=>json_encode($podetails),"poamount"=>$poamount]);
+        $rramount = array_sum($this->ConvertCollectionToArray($podetails,"rramount_"));
+
+        return response()->json(["message"=>"success","podetails"=>json_encode($podetails),"poamount"=>$poamount,"rramount"=>$rramount]);
+    }
+
+    public function postpo(Request $request){
+        $pono = $request->pono;
+        $posteddate = Carbon::now();
+
+        $purchaseorder = PurchaseorderHeader::find($pono);
+
+        $purchaseorder->posted = "Y";
+        $purchaseorder->posted_by = "KCP";
+        $purchaseorder->posted_date = $posteddate;
+        $purchaseorder->save();
+
+        return response()->json(["message"=>"success"]);
+    }
+
+    public function cancelpo(Request $request){
+        $pono = $request->pono;
+        $canceldate = Carbon::now();
+
+        $purchaseorder = PurchaseorderHeader::find($pono);
+
+        $purchaseorder->cancelled = 'Y';
+        $purchaseorder->cancelled_by = "KCP";
+        $purchaseorder->cancelled_date = $canceldate;
+        $purchaseorder->save();
+
+        return response()->json(["message"=>"success"]);
     }
 }

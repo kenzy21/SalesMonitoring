@@ -39,6 +39,8 @@
                     <th>Description</th>
                     <th>Unit</th>
                     <th class="text-right">Qty</th>
+                    <th class="text-right">RR Qty</th>
+                    <th class="text-right">Bal Qty</th>
                     <th class="text-right">Cost</th>
                     <th class="text-right">Amount</th>
                 </thead>

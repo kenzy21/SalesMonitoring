@@ -28,10 +28,16 @@ Route::post('/purchaseorder/save/transaction','PurchaseorderController@purchaseo
 Route::get('/purchaseorder/details','PurchaseorderController@purchaseorderdetails');
 Route::get('/purchaseorder/period','PurchaseorderController@purchaseorderperiod');
 Route::get('/purchaseorder/list','PurchaseorderController@purchaseorderlist');
+Route::post('/purchaseorder/post','PurchaseorderController@postpo');
+Route::post('/purchaseorder/cancel','PurchaseorderController@cancelpo');
 
 //Stock Receive
 Route::get('/stockreceive','StockReceiveController@stockreceive');
 Route::get('/stockreceive/create','StockReceiveController@stockreceivecreate');
+Route::get('/stockreceive/check/serialize','StockReceiveController@IsSerialize');
+Route::post('/stockreceive/save/transaction','StockReceiveController@stockreceivesavetransaction');
+Route::get('/stockreceive/details','StockReceiveController@stockreceivedetails');
+Route::get('/stockreceive/period','StockReceiveController@stockreceiveperiod');
 
 //For Test
 Route::get('/test','TestController@test');

@@ -86,7 +86,7 @@
     @include('Pages.Modal.StockReceiveExpiry')
     <script>
         $(document).ready(function(){
-            var pocode,suppcode;
+            var pocode;
 
             setTimeout(function(){
                 $("#pono").focus();
@@ -103,6 +103,12 @@
                 }
             };
             //End 
+
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
 
             $.ajax({
                 type: "GET",
@@ -129,21 +135,31 @@
                                         type: "GET",
                                         url: "/purchaseorder/details",
                                         data:{
-                                            pocode:pocode
+                                            pocode:pocode,
+                                            querytype:"rr"
                                         },
                                         success:function(result){
                                             if(result.message=="success"){
                                                 $("#list-items tbody tr").empty();
                                                 var poamount,discountamount,netamount;
-                                                poamount = accounting.formatMoney(result.poamount, { symbol: "",  format: "%v %s" });
+                                                poamount = accounting.formatMoney(result.rramount, { symbol: "",  format: "%v %s" });
                                                 discountamount = $("#discount-amount").val();
                                                 netamount = parseFloat(poamount.replace(",","")) + parseFloat(discountamount);
+
                                                 $.each(JSON.parse(result.podetails),function(i,item){
-                                                        ListPODetails(i+1,item.stockcode,item.stockdesc,item.unit,item.qty,item.cost,item.amount);
+                                                        ListPODetails(i+1,item.stockcode,item.stockdesc,item.unit,item.qty,item.cost,item.rramount);
                                                 })
+
                                                 $("#gross-amount").val(poamount);
                                                 $("#net-amount").val(accounting.formatMoney(netamount, { symbol: "",  format: "%v %s" }));
                                                 $("#terms").select();
+                                            }
+                                            else if(result.message == "delivered"){
+                                                Swal.fire(
+                                                    'PO is fully delivered.',
+                                                    '',
+                                                    'success'
+                                                )
                                             }
                                             else if(result.message=="nodata"){
                                                 Swal.fire(
@@ -175,6 +191,7 @@
                 $("#gross-amount").val("0.00");
                 $("#discount-amount").val("0.00");
                 $("#net-amount").val("0.00")
+                $("#list-items tbody tr").empty();
             };
 
             ClearFields();
@@ -254,13 +271,13 @@
                                 <td class='text-right'>" + cost_ + "</td> \
                                 <td class='text-right'>" + amount_ + "</td> \
                                 <td class='text-center'> \
-                                    <a href='#' id='remove' title='Remove'><span><i class='fas fa-trash-alt' style='color:#427bf5;'></i></span><a/> \
+                                    <a href='javascript:void()' id='remove' title='Remove'><span><i class='fas fa-trash-alt' style='color:#427bf5;'></i></span><a/> \
                                     <span>|</span> \
-                                    <a href='#' id='edit' title='Edit'><span><i class='fas fa-edit' style='color:#427bf5;'></i></span></a> \
+                                    <a href='javascript:void()' id='edit' title='Edit'><span><i class='fas fa-edit' style='color:#427bf5;'></i></span></a> \
                                     <span>|</span> \
-                                    <a href='#' id='serial' title='Serial'><i class='fas fa-barcode' style='color:#427bf5;'></i></a> \
+                                    <a href='javascript:void()' id='serial' title='Serial'><i class='fas fa-barcode' style='color:#427bf5;'></i></a> \
                                     <span>|</span> \
-                                    <a href='#' id='expiry' title='Medicine Expiry'><i class='fas fa-file-prescription' style='color:#427bf5;'></i></a> \
+                                    <a href='javascript:void()' id='expiry' title='Medicine Expiry'><i class='fas fa-file-prescription' style='color:#427bf5;'></i></a> \
                                 </td> \
                                 <td hidden></td> \
                                 <td hidden></td> \
@@ -300,6 +317,7 @@
                 $("#description-edititem").val(stockdesc);
                 $("#unit-edititem").val(unit);
                 $("#quantity-edititem").val(qty);
+                $("#qty").val(qty);
                 $("#cost-edititem").val(cost);
                 $("#stockreceive-edititem").modal("show");
              });
@@ -307,17 +325,36 @@
              $("#list-items").on("click","tbody td #serial",function(){
                 var CurrRow = $(this).closest("tr");
                 var rowno = CurrRow.find("td:eq(0)").text();
+                var stockcode = CurrRow.find("td:eq(1)").text();
                 var stockdesc = CurrRow.find("td:eq(2)").text();
                 var qty = CurrRow.find("td:eq(4)").text();
                 var serialno = CurrRow.find("td:eq(8)").text();
 
-                document.getElementById('serial-form').reset();
-                $("#rowno-serial").val(rowno);
-                $("#description-serial").val(stockdesc);
-                $("#quantity-serial").val(qty);
-                $("#serialno").val(serialno);
+                $.ajax({
+                    type: "GET",
+                    url: "/stockreceive/check/serialize",
+                    data:{
+                        stockcode:stockcode
+                    },
+                    success:function(result){
+                        if(result.check == true){
+                            document.getElementById('serial-form').reset();
+                            $("#rowno-serial").val(rowno);
+                            $("#description-serial").val(stockdesc);
+                            $("#quantity-serial").val(qty);
+                            $("#serialno").val(serialno);
 
-                $("#serial-modal").modal("show");
+                            $("#serial-modal").modal("show");
+                        }
+                        else{
+                            Swal.fire(
+                                'Item is not serialize',
+                                'Please check master file.',
+                                'warning'
+                            )
+                        }
+                    }
+                })
              });
 
              $("#list-items").on("click","tbody td #expiry",function(){
@@ -337,7 +374,7 @@
 
              $("#save-transaction").on("click",function(){
                  var terms = $("#terms").val();
-
+                    
                 if(pocode == undefined){
                     Swal.fire(
                         'Please select PO No.',
@@ -367,14 +404,50 @@
                         confirmButtonText: 'Yes'
                     }).then((result) => {
                         if(result.value){
-                            alert(pocode);
-                            alert(suppcode);
+                            var stockreceive_details = [];
+                            $("#list-items tr").each(function(i){
+                                if(i==0) return;
+                                var stockcode = $.trim($(this).find("td:eq(1)").text());
+                                var unit = $.trim($(this).find("td:eq(3)").text());
+                                var qty = $.trim($(this).find("td:eq(4)").text());
+                                var cost = $.trim($(this).find("td:eq(5)").text());
+                                
+                                stockreceive_details.push({stockcode: stockcode,unit: unit,qty: qty,cost: cost});
+                            });
+                            $.ajax({
+                                type: "POST",
+                                url: "/stockreceive/save/transaction",
+                                data:{
+                                    pocode:pocode,
+                                    remarks:$("#remarks").val(),
+                                    gross_amount:$("#gross-amount").val(),
+                                    discount_amount:$("#discount-amount").val(),
+                                    net_amount:$("#net-amount").val(),
+                                    stockreceive_details:JSON.stringify(stockreceive_details)
+                                },
+                                success:function(result){
+                                    if(result.message=="success"){
+                                        Swal.fire(
+                                            'Successfully saved.',
+                                            '',
+                                            'success'
+                                        ).then(function(){
+                                            location.reload();
+                                        })
+                                    }
+                                    else{
+                                        Swal.fire(
+                                            'Something went wrong.',
+                                            'Data was not saved successfully.',
+                                            'error'
+                                        )
+                                    }
+                                }
+                            })
                         }
                     })
                 }
              });
-
-             
 
         });
     </script>

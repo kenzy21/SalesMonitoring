@@ -26,6 +26,7 @@
                 <label for="">Quantity</label>
                 <input type="text" class="form-control" id="quantity-edititem">
             </div>
+            <input type="text" class="form-control" id="qty" hidden>
         </div>
         <div class="modal-footer">
         </div>
@@ -64,6 +65,7 @@
         rowidx = $("#rowno").val();
         cost = $("#cost-edititem").val();
         qty = $("#quantity-edititem").val();
+        qty_val = $("#qty").val();
         amount = parseFloat(cost.replace(/,/ig,'')) * parseFloat(qty.replace(/,/ig,''))
 
         if(keycode == 13){
@@ -80,6 +82,15 @@
                     '',
                     'warning'
                 )
+            }
+            else if(parseFloat(qty) >parseFloat(qty_val)){
+                Swal.fire(
+                    'Qty must not be greater that PO qty or PO outstanding balance',
+                    '',
+                    'warning'
+                ).then(function(){
+                    $("#quantity-edititem").select();
+                })
             }
             else{
                 $.getScript('/js/EditCurrentCell.js', function() {

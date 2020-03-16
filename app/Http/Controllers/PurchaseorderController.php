@@ -68,6 +68,8 @@ class PurchaseorderController extends Controller
                 DB::raw("(SELECT supplier_name FROM salesmonitoring.supplier WHERE suppcode = purchaseorder_header.suppcode) supplier"),
                 DB::raw("(SELECT supplier_address FROM salesmonitoring.supplier WHERE suppcode = purchaseorder_header.suppcode) address"),
                 DB::raw("CONCAT(purchaseorder_prefix,'-',purchaseorder_code) pono"))
+            ->where("posted","Y")
+            ->where("cancelled","N")
             ->whereNull("stockreceive_code")
             ->orderBy("purchaseorder_date")
             ->get();

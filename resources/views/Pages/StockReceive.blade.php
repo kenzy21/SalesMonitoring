@@ -38,24 +38,33 @@
                         <div style="overflow-x:auto;">  
                             <table class="table" id="rrlist">
                                 <thead class="thead-light">
-                                    <th>stockreceivecode</th>
+                                    <th hidden>stockreceivecode</th>
                                     <th>RR No.</th>
                                     <th>RR Date</th>
                                     <th>PO No.</th>
                                     <th>Supplier</th>
                                     <th class="text-right">Amount</th>
                                     <th class="text-center">Details</th>
+                                    <th class="text-center">Action</th>
                                 </thead>
                                 <tbody>
                                     @foreach($rrheaders as $rrheader)
                                         <tr>
-                                            <td>{{ $rrheader->stockreceive_code }}</td>
+                                            <td hidden>{{ $rrheader->stockreceive_code }}</td>
                                             <td>{{ $rrheader->rrno }} </td>
                                             <td>{{ $rrheader->rrdate }}</td>
                                             <td>{{ $rrheader->pono }}</td>
                                             <td>{{ $rrheader->supplier }}</td>
                                             <td class="text-right">{{ $rrheader->netamount }}</td>
                                             <th class="text-center"><a href="javascript:void()"><i class="fas fa-bars" style="color:#427bf5;"></i></a></th>
+                                            <td colspan = '2' class='text-center'> 
+                                                <button type='button' class='btn btn-success' id='post'> 
+                                                    <i class='fa fa-check-circle' aria-hidden='true' title='Post PO'></i> 
+                                                </button> 
+                                                <button type='button' class='btn btn-danger' id='cancel'> 
+                                                    <i class='fa fa-minus-circle' aria-hidden='true' title='Cancel PO'></i> 
+                                                </button> 
+                                            </td> 
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -175,7 +184,7 @@
 
             function StockreceivePeriodList(rrcode,rrno,rrdate,pono,supplier,amount){
                 var rrheader = "<tr> \
-                                    <td>" + rrcode + "</td> \
+                                    <td hidden>" + rrcode + "</td> \
                                     <td>" + rrno + "</td> \
                                     <td>" + rrdate + "</td> \
                                     <td>" + pono + "</td> \

@@ -120,7 +120,7 @@
                 $("#polist").on("click","tbody tr a",function(){
                     var CurrentRow = $(this).closest("tr");
                     var pocode = CurrentRow.find("td:eq(0)").text();
-    
+
                     $.ajax({
                         type: "GET",
                         url: "/purchaseorder/details",
@@ -309,6 +309,7 @@
                     var CurrRow = $(this).closest("tr");
                     var postatus = CurrRow.find("td:eq(6)").text();
                     var pono = CurrRow.find("td:eq(0)").text();
+                    var pocode = CurrRow.find("td:eq(1)").text();
 
                     if(postatus == "Cancelled"){
                         Swal.fire(
@@ -326,8 +327,8 @@
                     }
                     else{
                         Swal.fire({
-                            title: 'Are you sure you want to post it?',
-                            text: "",
+                            title: 'Are you sure you want to cancel selected PO?',
+                            text: "PO No. " + pocode,
                             icon: 'question',
                             showCancelButton: true,
                             confirmButtonColor: '#3085d6',

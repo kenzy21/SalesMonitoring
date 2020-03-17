@@ -45,7 +45,10 @@
                                     <th>Supplier</th>
                                     <th class="text-right">Amount</th>
                                     <th class="text-center">Details</th>
+                                    <th class="text-center">Status</th>
                                     <th class="text-center">Action</th>
+                                    <th hidden>suppcode</th>
+                                    <th hidden>terms</th>
                                 </thead>
                                 <tbody>
                                     @foreach($rrheaders as $rrheader)
@@ -56,7 +59,14 @@
                                             <td>{{ $rrheader->pono }}</td>
                                             <td>{{ $rrheader->supplier }}</td>
                                             <td class="text-right">{{ $rrheader->netamount }}</td>
-                                            <th class="text-center"><a href="javascript:void()"><i class="fas fa-bars" style="color:#427bf5;"></i></a></th>
+                                            <td class="text-center"><a href="javascript:void()"><i class="fas fa-bars" style="color:#427bf5;"></i></a></td>
+                                            @if($rrheader->cancelled == "Y")
+                                                <td class="text-center"><div class="alert alert-danger" style="font-size:60%;">Cancelled</div></td>
+                                            @elseif($rrheader->posted == "Y")
+                                                <td class="text-center"><div class="alert alert-success" style="font-size:60%;">Posted</div></td>
+                                            @else
+                                                <td class="text-center"><div class="alert alert-secondary" style="font-size:60%;">Unposted</div></td>
+                                            @endif
                                             <td colspan = '2' class='text-center'> 
                                                 <button type='button' class='btn btn-success' id='post'> 
                                                     <i class='fa fa-check-circle' aria-hidden='true' title='Post PO'></i> 
@@ -65,6 +75,8 @@
                                                     <i class='fa fa-minus-circle' aria-hidden='true' title='Cancel PO'></i> 
                                                 </button> 
                                             </td> 
+                                            <td hidden>{{ $rrheader->suppcode }}</td>
+                                            <td hidden>{{ $rrheader->terms }}</td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -76,6 +88,12 @@
     @include('Pages.Modal.StockreceiveDetails')
     <script>
         $(document).ready(function(){
+
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
 
             $("#dtfrom").datepicker({
                 format: "mm/dd/yyyy",
@@ -195,6 +213,123 @@
 
                 $("#rrlist tbody").append(rrheader);
             };
+
+            $("#rrlist tbody tr #post").on("click",function(){
+                var CurrRow = $(this).closest("tr");
+                var rrno = CurrRow.find("td:eq(0)").text();
+                var rrcode = CurrRow.find("td:eq(1)").text();
+                var suppcode = CurrRow.find("td:eq(9)").text();
+                var terms = CurrRow.find("td:eq(10)").text();
+                var rramount = CurrRow.find("td:eq(5)").text();
+                var rrstatus = CurrRow.find("td:eq(7)").text();
+
+
+                if(rrstatus == "Posted"){
+                    Swal.fire(
+                        'Selected RR No. is already posted.',
+                        'RR No. ' + rrcode,
+                        'warning'
+                    )
+                }
+                else if(rrstatus == "Cancelled"){
+                    Swal.fire(
+                        "Can't post cancelled RR No.",
+                        '',
+                        'error'
+                    )
+                }
+                else{               
+                    Swal.fire({
+                        title: 'Are you sure you want to post selected RR?',
+                        text: "RR No. " + rrcode,
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Yes'
+                    }).then((result) => {
+                        if(result.value){
+                            $.ajax({
+                                type: "POST",
+                                url: "/stockreceive/post",
+                                data:{
+                                    rrno:rrno,
+                                    rrcode:rrcode,
+                                    suppcode:suppcode,
+                                    terms:terms,
+                                    rramount:rramount
+                                },
+                                success:function(result){
+                                    if(result.message=="success"){
+                                        Swal.fire(
+                                            'Select RR was posted successfully.',
+                                            'RR No.' + rrcode,
+                                            'success'
+                                        ).then(function(){
+                                            location.reload();
+                                        })
+                                    }
+                                }
+                            })
+                        }
+                    })
+                }
+            });
+
+            $("#rrlist tbody tr #cancel").on("click",function(){
+                var CurrRow = $(this).closest("tr");
+                var rrno = CurrRow.find("td:eq(0)").text();
+                var rrcode = CurrRow.find("td:eq(1)").text();
+                var rrstatus = CurrRow.find("td:eq(7)").text();
+
+                if(rrstatus == "Posted"){
+                    Swal.fire(
+                        'Selected RR No. is already posted.',
+                        "Can't cancel posted RR",
+                        'warning'
+                    )
+                }
+                else if(rrstatus == "Cancelled"){
+                    Swal.fire(
+                        'Selected RR no. is already cancelled.',
+                        '',
+                        'warning'
+                    )
+                }
+                else{
+                    Swal.fire({
+                        title: 'Are you sure you want to cancel selected RR?',
+                        text: "RR No. " + rrcode,
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Yes'
+                    }).then((result) => {
+                        if(result.value){
+                            $.ajax({
+                                type: "POST",
+                                url: "/stockreceive/cancel",
+                                data:{
+                                    rrno:rrno,
+                                    rrcode:rrcode
+                                },
+                                success:function(result){
+                                    if(result.message=="success"){
+                                        Swal.fire(
+                                            'Selected RR No. is cancelled successfully.',
+                                            'RR No. ' + rrcode,
+                                            'success' 
+                                        ).then(function(){
+                                            location.reload();
+                                        })
+                                    }
+                                }
+                            })
+                        }
+                    })
+                }
+            });
         });
     </script>
 @endsection

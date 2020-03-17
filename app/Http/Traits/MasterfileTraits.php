@@ -39,7 +39,7 @@ trait MasterfileTraits {
     }
 
     public function GetStocktagdesc($stock){
-        $stocktag = Stocktag::where('stocktag',$stock)-first('description');
+        $stocktag = Stocktag::where('stocktag',$stock)->first('description');
         return $stocktag->description;
     }
 
@@ -64,7 +64,13 @@ trait MasterfileTraits {
         return false;
     }
 
-    // Stock Receive Functions
+    public function GetStockBalance($stockcode){
+        $stockbal = Masterfile::where('stockcode',$stockcode)->get('qty');
+        $qty = $this->ConvertCollectionToArray($stockbal,"qty");
+        return $qty[0];
+    }
+
+    //Stock Receive Functions
     public function IsDeliveryComplete($pocode){
         $delivery = DB::table("salesmonitoring.purchaseorder_header")
                     ->leftJoin("salesmonitoring.purchaseorder_details","purchaseorder_header.purchaseorder_code",
@@ -100,12 +106,16 @@ trait MasterfileTraits {
         }
 
         $rrheader = DB::table("salesmonitoring.stockreceive_header")
-                    ->select("stockreceive_code","remarks",
+                    ->select("stockreceive_code","remarks","posted","cancelled",
                         DB::raw("CONCAT(stockreceive_prefix,'-',stockreceive_code) rrno"),
                         DB::raw("DATE_FORMAT(stockreceive_date,'%m/%d/%Y') rrdate"),
                         DB::raw("DATE_FORMAT(stockreceive_date,'%Y-%m') rrdate_"),
                         DB::raw("(SELECT CONCAT(purchaseorder_prefix,'-',purchaseorder_code) FROM salesmonitoring.purchaseorder_header
                                     WHERE purchaseorder_header.purchaseorder_code = stockreceive_header.purchaseorder_code) pono"),
+                        DB::raw(" (SELECT terms FROM salesmonitoring.purchaseorder_header
+                                    WHERE purchaseorder_header.purchaseorder_code = stockreceive_header.purchaseorder_code) terms"),
+                        DB::raw(" (SELECT suppcode FROM salesmonitoring.purchaseorder_header
+                                    WHERE purchaseorder_header.purchaseorder_code = stockreceive_header.purchaseorder_code) suppcode"),
                         DB::raw("(SELECT supplier_name FROM salesmonitoring.supplier WHERE suppcode = (SELECT suppcode FROM salesmonitoring.purchaseorder_header
                                     WHERE purchaseorder_header.purchaseorder_code = stockreceive_header.purchaseorder_code)) supplier"),
                         DB::raw("FORMAT(gross_amount,2) grossamount"),

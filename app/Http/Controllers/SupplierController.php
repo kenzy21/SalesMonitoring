@@ -11,7 +11,6 @@ class SupplierController extends Controller
 {
     public function supplier(){
         $suppliers = Supplier::all();
-
         return view('Pages.Supplier',compact('suppliers'));
     }
 

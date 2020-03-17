@@ -38,6 +38,13 @@ Route::get('/stockreceive/check/serialize','StockReceiveController@IsSerialize')
 Route::post('/stockreceive/save/transaction','StockReceiveController@stockreceivesavetransaction');
 Route::get('/stockreceive/details','StockReceiveController@stockreceivedetails');
 Route::get('/stockreceive/period','StockReceiveController@stockreceiveperiod');
+Route::post('/stockreceive/post','StockReceiveController@postrr');
+Route::post('/stockreceive/cancel','StockReceiveController@cancelrr');
+
+//Reference Controller
+
+//Cash Transaction
+Route::get('/cash','CashController@cash');
 
 //For Test
 Route::get('/test','TestController@test');

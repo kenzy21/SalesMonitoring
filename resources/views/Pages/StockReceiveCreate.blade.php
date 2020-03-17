@@ -419,6 +419,7 @@
                                 url: "/stockreceive/save/transaction",
                                 data:{
                                     pocode:pocode,
+                                    suppcode:suppcode,
                                     remarks:$("#remarks").val(),
                                     gross_amount:$("#gross-amount").val(),
                                     discount_amount:$("#discount-amount").val(),

@@ -23,6 +23,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        \View::composer(['*'],function($view){
+
+            $user = "kenneth";
+            $view->with('user',$user);
+            
+        });
     }
 }

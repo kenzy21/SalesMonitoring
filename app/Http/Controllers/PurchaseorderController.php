@@ -147,27 +147,47 @@ class PurchaseorderController extends Controller
         $pono = $request->pono;
         $posteddate = Carbon::now();
 
-        $purchaseorder = PurchaseorderHeader::find($pono);
+        DB::beginTransaction();
 
-        $purchaseorder->posted = "Y";
-        $purchaseorder->posted_by = "KCP";
-        $purchaseorder->posted_date = $posteddate;
-        $purchaseorder->save();
+        try{
+            $purchaseorder = PurchaseorderHeader::find($pono);
 
-        return response()->json(["message"=>"success"]);
+            $purchaseorder->posted = "Y";
+            $purchaseorder->posted_by = "KCP";
+            $purchaseorder->posted_date = $posteddate;
+            $purchaseorder->save();
+    
+            DB::commit();
+            
+            return response()->json(["message"=>"success"]);
+        }
+        catch(Exception $e){
+            DB::rollback();
+            return response()->json(["message"=>"failed"]);
+        }
     }
 
     public function cancelpo(Request $request){
         $pono = $request->pono;
         $canceldate = Carbon::now();
 
-        $purchaseorder = PurchaseorderHeader::find($pono);
+        DB::beginTransaction();
 
-        $purchaseorder->cancelled = 'Y';
-        $purchaseorder->cancelled_by = "KCP";
-        $purchaseorder->cancelled_date = $canceldate;
-        $purchaseorder->save();
+        try{
+            $purchaseorder = PurchaseorderHeader::find($pono);
 
-        return response()->json(["message"=>"success"]);
+            $purchaseorder->cancelled = 'Y';
+            $purchaseorder->cancelled_by = "KCP";
+            $purchaseorder->cancelled_date = $canceldate;
+            $purchaseorder->save();
+    
+            DB::commit();
+
+            return response()->json(["message"=>"success"]);
+        }
+        catch(Exception $e){
+            DB::rollback();
+            return response()->json(["message"=>"failed"]);
+        }
     }
 }

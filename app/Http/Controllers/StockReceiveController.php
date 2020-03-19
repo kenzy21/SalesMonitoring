@@ -113,7 +113,7 @@ class StockReceiveController extends Controller
                 $transaction->stockbal = $stockbal;
                 $transaction->qty = $value["qty"];
                 $transaction->cost = $value["cost"];
-                $transaction->amount = $value["qty"] * $value["cost"];
+                $transaction->amount = floatval($value["cost"]) * floatval($value["qty"]) ;
                 $transaction->runqty = $stockbal + $value["qty"];
                 $transaction->trantype = "RR";
                 
@@ -171,6 +171,7 @@ class StockReceiveController extends Controller
             $apledger->suppcode = $suppcode;
             $apledger->referenceno = $rrno;
             $apledger->amount = $rramount;
+            $apledger->remarks = "RR NO. " . $rrno;
             $apledger->trancode = "RR";
             $apledger->user = "KCP";
             $apledger->save();

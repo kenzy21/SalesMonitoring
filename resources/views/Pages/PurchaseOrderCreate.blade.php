@@ -190,7 +190,6 @@
                             'warning'
                         ).then(function(){
                             $("#supplier").focus();
-                            e.preventDefault();
                         });
                 }
                 else if(terms == "" || parseFloat(terms) == 0){

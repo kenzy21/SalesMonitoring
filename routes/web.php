@@ -42,6 +42,9 @@ Route::post('/stockreceive/post','StockReceiveController@postrr');
 Route::post('/stockreceive/cancel','StockReceiveController@cancelrr');
 
 //Reference Controller
+Route::get('/reference/client/list','ReferenceController@GetListClients');
+Route::get('/stocklist','ReferenceController@GetListItems');
+Route::get('/discount','ReferenceController@GetDiscountType');
 
 //Cash Transaction
 Route::get('/cash','CashController@cash');

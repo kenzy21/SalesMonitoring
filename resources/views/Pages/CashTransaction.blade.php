@@ -10,6 +10,7 @@
             </div>
             <div class="card-body">   
                 <form id="cashtransaction-create">
+                    <input type="text" class="form-control form-control-sm" id="discounttype">
                     <div class="form-row">
                         <div class="form-group col-md-6">
                             <label for="">Client</label>
@@ -42,7 +43,7 @@
                                 <th style="width:340px;">Stock Description</th>
                                 <th style="width:30px;">Unit</th>
                                 <th style="width:60px;" class="text-right">Qty</th>
-                                <th style="width:90px;" class="text-right"> Cost</th>
+                                <th style="width:90px;" class="text-right"> Price</th>
                                 <th style="width:120px;" class="text-right">Total</th>
                                 <th style="width:30px;" class="text-center">Action</th>
                             </thead>
@@ -72,7 +73,7 @@
                     </div>
                     <div class="form-row">
                         <div class="col-md-10">
-                                <span style="font-size:75%">F1 - Add Item | F2 - Save Transaction | F4 - Payment | F8 - Discount</span>
+                                <span style="font-size:75%">F1 - Add Item | F2 - Save Transaction | F4 - Payment | F8 - Discount | F9 - Quantity</span>
                         </div>
                         <div class="col-md-2">
                             <div class="form-group">
@@ -84,6 +85,7 @@
         </div>
     </div>
     @include('Pages.Modal.CashTransactionAddItem')
+    @include('Pages.Modal.CashTransactionEdit')
     @include('Pages.Modal.Discount')
     <script>
         $(document).ready(function(){
@@ -97,12 +99,17 @@
 
             document.onkeyup = KeyCheck;
             
-            document.getElementById("cashtransaction-create").reset(); 
-            $("#gross-amount").val("0.00");
-            $("#discount-amount").val("0.00");
-            $("#payment-amount").val("0.00");
-            $("#net-amount").val("0.00");
-            $("#change-amount").val("0.00");
+            function LoadDefault(){
+                document.getElementById("cashtransaction-create").reset(); 
+                var setzero = "0.00"
+                $("#gross-amount").val(setzero.trim());
+                $("#discount-amount").val(setzero.trim());
+                $("#payment-amount").val(setzero.trim());
+                $("#net-amount").val(setzero.trim());
+                $("#change-amount").val(setzero.trim());
+            };
+
+            LoadDefault();
 
             function KeyCheck(e){
                 var KeyID = (window.event) ? event.keyCode : e.keyCode;
@@ -111,15 +118,24 @@
                     $("#additem").trigger("click");
                 }
                 else if(KeyID == 113){
-                    //$("#save-transaction").trigger("click");
+                    $("#save-transaction").trigger("click");
+                }
+                else if(KeyID == 115){
+                    $("#payment-amount").select();
                 }
                 else if(KeyID == 119){
                    var dueamount = $("#gross-amount").val();
                    $("#dueamount").val(dueamount);
                    $("#cashtransaction-discount").modal("show");
                 }
-                else if(KeyID == 115){
-                    $("#payment-amount").select();
+                else if(KeyID == 120){
+                   $("#rowno-cashedititem").val($("#trans-list tr:last td:eq(0)").text());
+                   $("#description-cashedititem").val($("#trans-list tr:last td:eq(2)").text());
+                   $("#unit-cashedititem").val($("#trans-list tr:last td:eq(3)").text());
+                   $("#price-cashedititem").val($("#trans-list tr:last td:eq(5)").text());
+                   $("#quantity-cashedititem").val($("#trans-list tr:last td:eq(4)").text());
+
+                   $("#cashtransaction-edititem").modal("show");
                 }
             };
 
@@ -175,8 +191,94 @@
                 $("#change-amount").val(accounting.formatMoney(total, { symbol: "",  format: "%v %s" }));
             });
 
-            $("#save-transaction").on("click",function(){
+            $("#trans-list").on("click","tbody tr #remove",function(){
+                Swal.fire({
+                    title: "Are you sure you want to remove it?",
+                    text: "",
+                    icon: "question",
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes'
+                }).then((result) => {
+                if(result.value){
+                    if($("#trans-list tbody tr").length == 1){
+                        LoadDefault();
+                    }
+                    $(this).closest("tr").remove();
+                        SetRow();
+                    }
+                });
+            });
 
+            $("#trans-list").on("click","tbody tr #edit",function(){
+                var CurrRow = $(this).closest("tr");
+
+                $("#rowno-cashedititem").val(CurrRow.find("td:eq(0)").text());
+                $("#description-cashedititem").val(CurrRow.find("td:eq(2)").text().trim());
+                $("#unit-cashedititem").val(CurrRow.find("td:eq(3)").text().trim());
+                $("#price-cashedititem").val(CurrRow.find("td:eq(5)").text().trim());
+                $("#quantity-cashedititem").val(CurrRow.find("td:eq(4)").text().trim());
+
+                $("#cashtransaction-edititem").modal("show");
+            })
+
+            $("#save-transaction").on("click",function(){
+                var tablerows = $("#trans-list tbody tr").length;
+
+                if(tablerows == 0){
+                    Swal.fire(
+                        "There's no data",
+                        '',
+                        'error'
+                    )
+                }
+                else{
+                    var transaction_list = [];
+                    var discounttype = $("#discounttype").val();
+                    var grossamount = $("#gross-amount").val();
+                    var discount = $("discount-amount").val();
+                    var netamount = $("net-amount").val();
+
+                    $("#trans-list tr").each(function(i){
+                        if(i==0) return
+                        transaction_list.push({
+                            stockcode: $(this).find("td:eq(1)").text(),
+                            unit: $(this).find("td:eq(3)").text(),
+                            qty: $(this).find("td:eq(4)").text(),
+                            price: $(this).find("td:eq(5)").text()
+                        });
+                    });
+
+                    Swal.fire({
+                    title: "Are you sure you want to save it?",
+                    text: "",
+                    icon: "question",
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes'
+                    }).then((result) => {
+                        if(result.value){
+                            $.ajax({
+                                type: "POST",
+                                url: "/cash/save",
+                                data:{
+                                    transactionlist:JSON.stringify(transaction_list),
+                                    discounttype:discounttype,
+                                    grossamount:grossamount,
+                                    discount:discount,
+                                    netamount:netamount
+                                },
+                                success:function(result){
+                                    if(result.message == "success"){
+                                        alert(result.transactionlist);   
+                                    }
+                                }
+                            })
+                        }
+                    })
+                }
             });
         
         });

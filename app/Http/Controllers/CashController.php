@@ -14,4 +14,14 @@ class CashController extends Controller
                      ->get();
         return view('Pages.CashTransaction',compact('discounts'));
     }
+
+    public function savecashtransaction(Request $request){
+        $transactionlist = $request->transactionlist;
+        $discounttype = $request->discounttype;
+        $grossamount = $request->grossamount;
+        $discount = $request->discount;
+        $netamount = $request->netamount;
+        
+        return response()->json(["message"=>"success","transactionlist"=>$transactionlist]);
+    }
 }

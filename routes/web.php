@@ -48,6 +48,7 @@ Route::get('/discount','ReferenceController@GetDiscountType');
 
 //Cash Transaction
 Route::get('/cash','CashController@cash');
+Route::post('/cash/save','CashController@savecashtransaction');
 
 //For Test
 Route::get('/test','TestController@test');

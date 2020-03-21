@@ -33,6 +33,7 @@
   </div>
 </div>
 <script>
+    var discount_type;
 
     $("#cashtransaction-discount").on("show.bs.modal",function(){
         $("#disc-amount").val("0.00");
@@ -56,11 +57,13 @@
             var disctype =  $("#discount-type option:selected").text();
             var discountamount;
             
+            discount_type = disctype.split("-",1)
+            
             $.ajax({
                 type: "GET",
                 url: "/discount",
                 data:{
-                    discounttype:disctype.split("-",1)
+                    discounttype:discount_type
                 },
                 success:function(result){
                     if(result.discounttype == "Y"){
@@ -121,6 +124,7 @@
             else{
                 netamount = dueamount - amount;
 
+                $("#discounttype").val(discount_type);
                 $("#discount-amount").val(accounting.formatMoney($("#disc-amount").val(), { symbol: "",  format: "%v %s" }));
                 $("#net-amount").val(accounting.formatMoney(netamount, { symbol: "",  format: "%v %s" }));
                 $("#cashtransaction-discount").modal("hide");

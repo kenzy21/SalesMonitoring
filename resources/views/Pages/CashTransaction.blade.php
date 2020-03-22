@@ -10,7 +10,7 @@
             </div>
             <div class="card-body">   
                 <form id="cashtransaction-create">
-                    <input type="text" class="form-control form-control-sm" id="discounttype">
+                    <input type="text" class="form-control form-control-sm" id="discounttype" hidden>
                     <div class="form-row">
                         <div class="form-group col-md-6">
                             <label for="">Client</label>
@@ -102,6 +102,7 @@
             function LoadDefault(){
                 document.getElementById("cashtransaction-create").reset(); 
                 var setzero = "0.00"
+                $("#trans-list tbody tr").empty();
                 $("#gross-amount").val(setzero.trim());
                 $("#discount-amount").val(setzero.trim());
                 $("#payment-amount").val(setzero.trim());
@@ -237,8 +238,8 @@
                     var transaction_list = [];
                     var discounttype = $("#discounttype").val();
                     var grossamount = $("#gross-amount").val();
-                    var discount = $("discount-amount").val();
-                    var netamount = $("net-amount").val();
+                    var discount = $("#discount-amount").val();
+                    var netamount = $("#net-amount").val();
 
                     $("#trans-list tr").each(function(i){
                         if(i==0) return
@@ -264,15 +265,22 @@
                                 type: "POST",
                                 url: "/cash/save",
                                 data:{
+                                    clientcode:clientcode,
                                     transactionlist:JSON.stringify(transaction_list),
                                     discounttype:discounttype,
-                                    grossamount:grossamount,
-                                    discount:discount,
-                                    netamount:netamount
+                                    grossamount:grossamount.replace(",",""),
+                                    discount:discount.replace(",",""),
+                                    netamount:netamount.replace(",","")
                                 },
                                 success:function(result){
                                     if(result.message == "success"){
-                                        alert(result.transactionlist);   
+                                        Swal.fire(
+                                            'Successfully saved.',
+                                            '',
+                                            'success'
+                                        ).then(function(){
+                                            LoadDefault();
+                                        })
                                     }
                                 }
                             })
